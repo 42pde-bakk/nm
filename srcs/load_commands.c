@@ -29,7 +29,6 @@ static void	loop_over_loadcommands_64(struct load_command* lc, uint32_t ncmds) {
 			print_segment_command_64((struct segment_command_64 *)lc, 2);
 		lc = (struct load_command *)((uintptr_t)lc + lc->cmdsize);
 	}
-	dprintf(2, "at the end, lc is at %p\n", (void *)lc);
 }
 
 void	print_load_commands(const struct mach_header* hdr) {
@@ -41,6 +40,5 @@ void	print_load_commands(const struct mach_header* hdr) {
 void	print_load_commands_64(const struct mach_header_64* hdr) {
 	struct load_command* lc = (struct load_command*)(hdr + 1);
 
-	dprintf(2, "lc will prolly end at %p\n", (void *)lc + hdr->sizeofcmds);
 	loop_over_loadcommands_64(lc, hdr->ncmds);
 }

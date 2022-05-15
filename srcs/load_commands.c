@@ -24,9 +24,15 @@ static void	print_load_command_64(const struct load_command* lc) {
 static void	loop_over_loadcommands_64(struct load_command* lc, uint32_t ncmds) {
 	for (unsigned int i = 0; i < ncmds; ++i) {
 		// Create a base laod command, alloc and copy bytes
-		print_load_command_64(lc);
-		if (lc->cmd == LC_SEGMENT_64)
-			print_segment_command_64((struct segment_command_64 *)lc, 2);
+		if (lc->cmd == LC_SEGMENT_64) {
+			print_segment_command_64((struct segment_command_64 *)lc, STDERR_FILENO);
+		}
+		else if (lc->cmd == LC_SYMTAB) {
+			print_symtab_command_64((struct symtab_command *)lc, STDERR_FILENO);
+		}
+		else {
+			print_load_command_64(lc);
+		}
 		lc = (struct load_command *)((uintptr_t)lc + lc->cmdsize);
 	}
 }

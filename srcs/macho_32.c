@@ -12,11 +12,3 @@ int handle_macho(void *file) {
 	print_segment_command((struct segment_command *)(file + hdr->sizeofcmds + sizeof(struct mach_header)), STDERR_FILENO);
 	return (0);
 }
-
-int handle_macho_64(void *file) {
-	struct mach_header_64* hdr = (struct mach_header_64 *)file;
-	print_mach_header_64(hdr, STDERR_FILENO);
-	print_load_commands_64(hdr);
-//	print_segment_command_64((struct segment_command_64 *)(file + hdr->sizeofcmds + sizeof(struct mach_header_64)), STDERR_FILENO);
-	return (0);
-}

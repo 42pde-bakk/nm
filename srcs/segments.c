@@ -3,6 +3,7 @@
 //
 #include <stdio.h>
 #include <mach-o/loader.h>
+#include "nm.h"
 
 /*
  * There are 4 segments:
@@ -61,5 +62,16 @@ void	print_segment_command_64(const struct segment_command_64* segmentCommand, c
 	for (unsigned int i = 0; i < segmentCommand->nsects; i++) {
 		const struct section_64* section64 = (struct section_64 *)((void *)segmentCommand + sizeof(struct segment_command_64) + i * sizeof(struct section_64));
 		print_section_64(section64, fd);
+		add_typeIndex(section64);
 	}
+}
+
+void	print_symtab_command_64(const struct symtab_command* symtabCommand, const int fd) {
+	dprintf(fd, "Symtab command (64):\n");
+	dprintf(fd, "\tcmd: %#x\n", symtabCommand->cmd);
+	dprintf(fd, "\tcmdsize: %u\n", symtabCommand->cmdsize);
+	dprintf(fd, "\tsymoff: %u\n", symtabCommand->symoff);
+	dprintf(fd, "\tnsyms: %u\n", symtabCommand->nsyms);
+	dprintf(fd, "\tstroff: %u\n", symtabCommand->stroff);
+	dprintf(fd, "\tstrsize: %u\n", symtabCommand->strsize);
 }

@@ -1,0 +1,9 @@
+#version: '3'
+
+nm:
+  build: ./
+  volumes:
+  - ./linux:/code
+  tty: true
+  container_name: pde-bakk_nm
+# From: https://github.com/shuhaoliu/docker-clion-dev/blob/master/docker-compose.yml

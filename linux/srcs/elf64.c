@@ -80,6 +80,9 @@ static Elf64_Shdr	*parseSectionHeader64(char* file, Elf64_Off offset) {
 	return (shdr);
 }
 
+/*
+ * https://stackoverflow.com/questions/15225346/how-to-display-the-symbols-type-like-the-nm-command
+ */
 char            print_type(Elf64_Sym sym, Elf64_Shdr *shdr)
 {
 	char  c;

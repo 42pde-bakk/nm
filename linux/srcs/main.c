@@ -25,10 +25,15 @@ int parse_magic_nb(char *file, struct stat *file_info) {
 	// check offset? idk
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
-		if (file[EI_CLASS] == ELFCLASS32)
+		printf("It is ELF\n");
+		if (file[EI_CLASS] == ELFCLASS32) {
+			printf("ELF32\n");
 			return (ELF32); // ELF32
-		else if (file[EI_CLASS] == ELFCLASS64)
+		}
+		else if (file[EI_CLASS] == ELFCLASS64) {
+			printf("ELF64\n");
 			return (ELF64); // ELF64
+		}
 	}
 	else if (strncmp(file, ARMAG, SARMAG) == 0) {
 		return (ARCHIVE); // Archive
@@ -36,11 +41,11 @@ int parse_magic_nb(char *file, struct stat *file_info) {
 	return (INVALID); // INVALID
 }
 
-int	handle_invalid(char* file, const uint32_t size) {
+int	handle_invalid(const char* file, const uint32_t size) {
 	(void)file; (void)size;
 	dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
+	return (1);
 }
-
 
 int main(int argc, char** argv) {
 	struct stat buf;
@@ -48,10 +53,14 @@ int main(int argc, char** argv) {
 	int fd;
 	char*	file;
 	const static handle_func handleFuncs[] = {
-		&handle_invalid, &handle_archive, &handle_elf32, &handle_elf64
+		[INVALID] = &handle_invalid,
+		[ARCHIVE] = &handle_archive,
+		[ELF32] = &handle_elf32,
+		[ELF64] = &handle_elf64
 	};
 
 	filename = filepath;
+	printf("filename = %s\n", filename);
 	if ((fd = open(filepath, O_RDONLY)) == -1) {
 		return (error("Please provide a file"));
 	}

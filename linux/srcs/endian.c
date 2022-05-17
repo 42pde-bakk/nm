@@ -29,36 +29,36 @@ e_endian	get_endianess() {
 	return (BIG);
 }
 
-uint32_t	reverse32(uint32_t x, bool should_reverse) {
+uint32_t	reverse32(const uint32_t x, const bool should_reverse) {
 	int				i = 0;
 	uint32_t		y = 0;
-	unsigned char	*ptr_x = (unsigned char *)&x;
-	unsigned char	*ptr_y = (unsigned char *)&y;
-	const size_t size = sizeof(x);
+	unsigned char	*ptr_x,
+					*ptr_y;
+	size_t			size = sizeof(x);
 
-	if (!should_reverse) {
+	if (!should_reverse)
 		return (x);
-	}
-	while (i < size) {
-		ptr_y[i] = ptr_x[size - i];
-		i++;
-	}
+	ptr_x = (unsigned char *)&x;
+	ptr_y = (unsigned char *)&y;
+	while (--size)
+		ptr_y[i++] = ptr_x[size];
+	ptr_y[i++] = ptr_x[size];
 	return (y);
 }
 
-uint32_t	reverse64(uint64_t x, bool should_reverse) {
+uint64_t reverse64(const uint64_t x, const bool should_reverse) {
 	int				i = 0;
 	uint64_t		y = 0;
-	unsigned char	*ptr_x = (unsigned char *)&x;
-	unsigned char	*ptr_y = (unsigned char *)&y;
-	const size_t size = sizeof(x);
+	unsigned char	*ptr_x,
+					*ptr_y;
+	size_t			size = sizeof(x);
 
-	if (!should_reverse) {
+	if (!should_reverse)
 		return (x);
-	}
-	while (i < size) {
-		ptr_y[i] = ptr_x[size - i];
-		i++;
-	}
+	ptr_x = (unsigned char *)&x;
+	ptr_y = (unsigned char *)&y;
+	while (--size)
+		ptr_y[i++] = ptr_x[size];
+	ptr_y[i++] = ptr_x[size];
 	return (y);
 }

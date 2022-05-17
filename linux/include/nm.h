@@ -7,12 +7,13 @@
 #define DEFAULT_PATH "/usr/bin/touch"
 #define MAX_SYMBOL_SIZE 512
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
-	INVALID = -1,
-	ARCHIVE = 0,
-	ELF32 = 1,
-	ELF64 = 2
+	INVALID = 0,
+	ARCHIVE = 1,
+	ELF32 = 2,
+	ELF64 = 3
 }	e_type;
 
 typedef enum {
@@ -22,25 +23,32 @@ typedef enum {
 	MIX = 3
 }	e_endian;
 
+typedef struct	s_section {
+	char* name;
+	uint32_t type;
+	uint32_t flag;
+}				t_section;
+
 typedef struct	s_symbol {
-	char		*name;
+	const char		*name;
 	uint8_t		type;
-	uint8_t		ext;
-	uint8_t		sect;
-	uint8_t		n_type;
-	uint16_t	desc;
+	uint8_t		bind;
+	uint16_t		shndx;
 	uint64_t	value;
+	unsigned char	letter;
 }				t_symbol;
 
 typedef int (*handle_func)();
-int	handle_elf32(char* file, const uint32_t size);
-int	handle_archive(char* file, const uint32_t size);
-int	handle_elf64(char* file, const uint32_t size);
+int	handle_elf32(char* file, uint32_t size);
+int	handle_archive(char* file, uint32_t size);
+int	handle_elf64(char* file, uint64_t size);
 
 /*
  * srcs/endian.c
  */
 e_endian	check_endian(int e_ident);
 e_endian	get_endianess();
+uint32_t	reverse32(uint32_t x, bool should_reverse);
+uint64_t	reverse64(uint64_t x, bool should_reverse);
 
 #endif //NM_NM_H

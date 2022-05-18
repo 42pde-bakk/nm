@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "nm.h"
-bool shouldReverse32 = false;
+bool g_shouldReverse32 = false;
 
 static Elf32_Ehdr	*parseElfHeader32(char* file) {
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)file;
@@ -79,8 +79,8 @@ int	handle_elf32(char* file, const uint32_t offset) {
 	uint8_t endianness = check_endian(hdr->e_ident[EI_DATA]);
 //	char	*strtable;
 
-	shouldReverse32 = (endianness != get_endianess());
-	printf("endianness: %d, machine endian: %d, shouldReverse64: %d\n", endianness, get_endianess(), shouldReverse32);
+	g_shouldReverse32 = (endianness != get_endianess());
+	printf("endianness: %d, machine endian: %d, shouldReverse64: %d\n", endianness, get_endianess(), g_shouldReverse32);
 	(void)offset;
 
 	return (0);

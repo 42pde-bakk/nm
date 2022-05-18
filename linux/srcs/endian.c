@@ -7,6 +7,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+bool	g_shouldReverse;
+//extern bool g_shouldReverse16;
+//extern bool g_shouldReverse32;
+//extern bool g_shouldReverse64;
+
 e_endian	check_endian(const int e_ident) {
 	switch (e_ident) {
 		case ELFDATA2LSB:
@@ -29,14 +34,18 @@ e_endian	get_endianess() {
 	return (BIG);
 }
 
-uint32_t	reverse32(const uint32_t x, const bool should_reverse) {
+void		set_shouldReverse(int myEndian, int theirEndian) {
+	g_shouldReverse = (myEndian != theirEndian);
+}
+
+uint16_t REV16(uint16_t x) {
 	int				i = 0;
-	uint32_t		y = 0;
+	uint16_t		y = 0;
 	unsigned char	*ptr_x,
 					*ptr_y;
 	size_t			size = sizeof(x);
 
-	if (!should_reverse)
+	if (!g_shouldReverse)
 		return (x);
 	ptr_x = (unsigned char *)&x;
 	ptr_y = (unsigned char *)&y;
@@ -46,14 +55,31 @@ uint32_t	reverse32(const uint32_t x, const bool should_reverse) {
 	return (y);
 }
 
-uint64_t reverse64(const uint64_t x, const bool should_reverse) {
+uint32_t	REV32(uint32_t x) {
+	int				i = 0;
+	uint32_t		y = 0;
+	unsigned char	*ptr_x,
+					*ptr_y;
+	size_t			size = sizeof(x);
+
+	if (!g_shouldReverse)
+		return (x);
+	ptr_x = (unsigned char *)&x;
+	ptr_y = (unsigned char *)&y;
+	while (--size)
+		ptr_y[i++] = ptr_x[size];
+	ptr_y[i++] = ptr_x[size];
+	return (y);
+}
+
+uint64_t REV64(uint64_t x) {
 	int				i = 0;
 	uint64_t		y = 0;
 	unsigned char	*ptr_x,
 					*ptr_y;
 	size_t			size = sizeof(x);
 
-	if (!should_reverse)
+	if (!g_shouldReverse)
 		return (x);
 	ptr_x = (unsigned char *)&x;
 	ptr_y = (unsigned char *)&y;

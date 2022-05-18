@@ -5,7 +5,6 @@
 #ifndef NM_NM_H
 #define NM_NM_H
 #define DEFAULT_PATH "ft_nm"
-#define MAX_SYMBOL_SIZE 512
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -31,10 +30,10 @@ typedef struct	s_section {
 
 typedef struct	s_symbol {
 	const char		*name;
-	uint8_t		type;
-	uint8_t		bind;
+	uint8_t			type;
+	uint8_t			bind;
 	uint16_t		shndx;
-	uint64_t	value;
+	uint64_t		value;
 	unsigned char	letter;
 }				t_symbol;
 
@@ -48,7 +47,11 @@ int	handle_elf64(char* file, uint64_t filesize);
  */
 e_endian	check_endian(int e_ident);
 e_endian	get_endianess();
-uint32_t	reverse32(uint32_t x, bool should_reverse); // Reverses if needed for 32bits
-uint64_t	reverse64(uint64_t x, bool should_reverse); // Reverses if needed for 64bits
+void		set_shouldReverse(int myEndian, int theirEndian);
+
+uint16_t	REV16(uint16_t x); // Reverses if needed for 32bits
+uint32_t	REV32(uint32_t x); // Reverses if needed for 32bits
+uint64_t	REV64(uint64_t x); // Reverses if needed for 64bits
+
 
 #endif //NM_NM_H

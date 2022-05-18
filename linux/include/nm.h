@@ -39,16 +39,16 @@ typedef struct	s_symbol {
 }				t_symbol;
 
 typedef int (*handle_func)();
-int	handle_elf32(char* file, uint32_t size);
-int	handle_archive(char* file, uint32_t size);
-int	handle_elf64(char* file, uint64_t size);
+int	handle_elf32(char* file, uint32_t offset);
+int	handle_archive(char* file, uint32_t offset);
+int	handle_elf64(char* file, uint64_t filesize);
 
 /*
  * srcs/endian.c
  */
 e_endian	check_endian(int e_ident);
 e_endian	get_endianess();
-uint32_t	reverse32(uint32_t x, bool should_reverse);
-uint64_t	reverse64(uint64_t x, bool should_reverse);
+uint32_t	reverse32(uint32_t x, bool should_reverse); // Reverses if needed for 32bits
+uint64_t	reverse64(uint64_t x, bool should_reverse); // Reverses if needed for 64bits
 
 #endif //NM_NM_H

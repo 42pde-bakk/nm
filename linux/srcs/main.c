@@ -21,8 +21,11 @@ static int	error(const char* str) {
 	return (EXIT_FAILURE);
 }
 
-int parse_magic_nb(char *file, struct stat *file_info) {
+static int parse_magic_nb(char *file, const size_t filesize) {
 	// check offset? idk
+	if (filesize < EI_CLASS) {
+		return (INVALID);
+	}
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
 		if (file[EI_CLASS] == ELFCLASS32) {
@@ -51,7 +54,7 @@ int main(int argc, char** argv) {
 	char* filepath = argc == 1 ? DEFAULT_PATH : argv[1];
 	int fd;
 	char*	file;
-	const static handle_func handleFuncs[] = {
+	static const handle_func handleFuncs[] = {
 		[INVALID] = &handle_invalid,
 		[ARCHIVE] = &handle_archive,
 		[ELF32] = &handle_elf32,
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
 
 	uint32_t magic_nb = *(uint32_t *)file;
 	dprintf(2, "magic_nb: %x\n", magic_nb);
-	e_type type = parse_magic_nb(file, &buf);
+	e_type type = parse_magic_nb(file, buf.st_size);
 	handleFuncs[type](file, buf.st_size);
 
 

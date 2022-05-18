@@ -34,7 +34,7 @@ static Elf32_Ehdr	*parseElfHeader32(char* file) {
 	return(ehdr);
 }
 
-static Elf32_Phdr	*parseProgramHeader32(char* file, Elf32_Off offset) {
+Elf32_Phdr	*parseProgramHeader32(char* file, Elf32_Off offset) {
 	if (offset == 0)
 		return (NULL);
 	Elf32_Phdr	*phdr = (Elf32_Phdr *)(file + offset);
@@ -52,7 +52,7 @@ static Elf32_Phdr	*parseProgramHeader32(char* file, Elf32_Off offset) {
 	return (phdr);
 }
 
-static Elf32_Shdr	*parseSectionHeader32(char* file, Elf32_Off offset) {
+Elf32_Shdr	*parseSectionHeader32(char* file, Elf32_Off offset) {
 	if (offset == 0)
 		return (NULL);
 	Elf32_Shdr	*shdr = (Elf32_Shdr *)(file + offset);
@@ -72,15 +72,16 @@ static Elf32_Shdr	*parseSectionHeader32(char* file, Elf32_Off offset) {
 	return (shdr);
 }
 
-int	handle_elf32(char* file, const uint32_t size) {
+int	handle_elf32(char* file, const uint32_t offset) {
 	Elf32_Ehdr	*hdr = parseElfHeader32(file);
-	Elf32_Phdr	*phdr = parseProgramHeader32(file, hdr->e_phoff);
-	Elf32_Shdr	*shdr = parseSectionHeader32(file, hdr->e_shoff);
+//	Elf32_Phdr	*phdr = parseProgramHeader32(file, hdr->e_phoff);
+//	Elf32_Shdr	*shdr = parseSectionHeader32(file, hdr->e_shoff);
 	uint8_t endianness = check_endian(hdr->e_ident[EI_DATA]);
-	char	*strtable;
+//	char	*strtable;
 
 	shouldReverse32 = (endianness != get_endianess());
 	printf("endianness: %d, machine endian: %d, shouldReverse64: %d\n", endianness, get_endianess(), shouldReverse32);
+	(void)offset;
 
 	return (0);
 }

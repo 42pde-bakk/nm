@@ -25,13 +25,12 @@ int parse_magic_nb(char *file, struct stat *file_info) {
 	// check offset? idk
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
-		printf("It is ELF\n");
 		if (file[EI_CLASS] == ELFCLASS32) {
-			printf("ELF32\n");
+			dprintf(2, "ELF32\n");
 			return (ELF32); // ELF32
 		}
 		else if (file[EI_CLASS] == ELFCLASS64) {
-			printf("ELF64\n");
+			dprintf(2, "ELF64\n");
 			return (ELF64); // ELF64
 		}
 	}
@@ -60,7 +59,7 @@ int main(int argc, char** argv) {
 	};
 
 	filename = filepath;
-	printf("filename = %s\n", filename);
+	dprintf(2, "filename = %s\n", filename);
 	if ((fd = open(filepath, O_RDONLY)) == -1) {
 		return (error("Please provide a file"));
 	}

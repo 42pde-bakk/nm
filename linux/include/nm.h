@@ -4,7 +4,7 @@
 
 #ifndef NM_NM_H
 #define NM_NM_H
-#define DEFAULT_PATH "/usr/bin/touch"
+#define DEFAULT_PATH "ft_nm"
 #define MAX_SYMBOL_SIZE 512
 #include <stdint.h>
 #include <stdbool.h>

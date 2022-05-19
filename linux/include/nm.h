@@ -57,8 +57,8 @@ uint64_t	REV64(uint64_t x); // Reverses if needed for 64bits
 /*
  * srcs/radixsort.c
  */
-//void	quicksort(t_symbol *symbols, size_t n_elems, int low, int high);
-void	bubbleSort(t_symbol *symbols[], size_t n_elems);
+typedef int idx_t;
+void	quickSort(t_symbol *symbols[], idx_t low, idx_t high);
 
 
 #endif //NM_NM_H

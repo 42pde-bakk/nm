@@ -202,7 +202,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str) {
 	}
 	dprintf(2, "before sort:\n");
 //	output_symbols(symbol_list, symbol_idx);
-	bubbleSort(symbol_list, symbol_idx);
+	quickSort(symbol_list, 0, (idx_t)(symbol_idx - 1));
 	dprintf(2, "after sort:\n");
 	output_symbols(symbol_list, symbol_idx);
 

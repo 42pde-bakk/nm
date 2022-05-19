@@ -1,7 +1,7 @@
 for filename in $1; do
   echo "$filename"
   ./ft_nm "$filename" > diff1.txt 2> /dev/null
-  nm -p "$filename" > diff2.txt 2> /dev/null
+  nm "$filename" > diff2.txt 2> /dev/null
   diff diff1.txt diff2.txt
 done
 

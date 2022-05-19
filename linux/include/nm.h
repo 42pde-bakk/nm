@@ -7,6 +7,7 @@
 #define DEFAULT_PATH "ft_nm"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef enum {
 	INVALID = 0,
@@ -52,6 +53,12 @@ void		set_shouldReverse(int myEndian, int theirEndian);
 uint16_t	REV16(uint16_t x); // Reverses if needed for 32bits
 uint32_t	REV32(uint32_t x); // Reverses if needed for 32bits
 uint64_t	REV64(uint64_t x); // Reverses if needed for 64bits
+
+/*
+ * srcs/radixsort.c
+ */
+//void	quicksort(t_symbol *symbols, size_t n_elems, int low, int high);
+void	bubbleSort(t_symbol *symbols[], size_t n_elems);
 
 
 #endif //NM_NM_H

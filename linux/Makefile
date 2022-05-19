@@ -25,8 +25,8 @@ export DEBUG
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(HEADER)
-	$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) -o $@
+$(NAME): $(LIBS) $(OBJS) $(HEADER)
+	$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) $(LIBS) -o $@
 	@printf "$(PINK)Done building ft_nm $(RESET)\n"
 
 %.o: %.c

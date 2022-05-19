@@ -143,32 +143,34 @@ char            print_type(Elf64_Sym sym)
 	return c;
 }
 
+static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *symstr) {
+	t_symbol *symbol = malloc(sizeof(t_symbol));
 
-static t_symbol	create_tsymbol(const Elf64_Sym *sym, const char *symstr) {
-	t_symbol symbol = {
-			.name = symstr + REV32(sym->st_name),
-			.type = ELF64_ST_TYPE(sym->st_info),
-			.bind = ELF64_ST_BIND(sym->st_info),
-			.shndx = REV16(sym->st_shndx),
-			.value = (sym->st_value),
-			.letter = print_type(*sym)
-	};
+	if (symbol == NULL)
+		return (NULL);
+	symbol->name = symstr + REV32(sym->st_name);
+	symbol->type = ELF64_ST_TYPE(sym->st_info);
+	symbol->bind = ELF64_ST_BIND(sym->st_info);
+	symbol->shndx = REV16(sym->st_info);
+	symbol->value = REV64(sym->st_value);
+	symbol->letter = print_type(*sym);
+
 	return (symbol);
 }
 
-void	output_symbols(t_symbol *symbols, Elf64_Half n_elems) {
+void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
 	for (Elf64_Half i = 0; i < n_elems; i++) {
-		const t_symbol symbol = symbols[i];
-		if (symbol.name == NULL) {
+		const t_symbol *symbol = symbols[i];
+		if (symbol->name == NULL) {
 			dprintf(2, "NULL\n");
 			continue ;
 		}
-		if (symbol.value == 0)
+		if (symbol->value == 0)
 			printf("%16s ", "");
 		else
-			printf("%016lx ", symbol.value);
-		printf("%c ", symbol.letter);
-		printf("%s", symbol.name);
+			printf("%016lx ", symbol->value);
+		printf("%c ", symbol->letter);
+		printf("%s", symbol->name);
 //		printf("\t\tshndx=%u,", symbol.shndx);
 //		printf(", bind=%#x ", symbol.bind);
 //		printf(", type=%#x", symbol.type);
@@ -180,13 +182,10 @@ void	output_symbols(t_symbol *symbols, Elf64_Half n_elems) {
 
 static void	print_symbols(Elf64_Sym *symbols, char* str) {
 	size_t		entries_amount = REV64(symboltable_sectionheader->sh_size) / REV64(symboltable_sectionheader->sh_entsize);
-	t_symbol	*symbol_list = malloc(entries_amount * sizeof(t_symbol));
+	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
 
-	if (!symbol_list) {
-		dprintf(2, "Error mallocing space for t_symbol list\n");
-		return ;
-	}
+	memset(symbol_list, 0, entries_amount * sizeof(t_symbol));
 
 	for (size_t i = 0; i < entries_amount; i++) {
 		if (REV32(symbols[i].st_name) != 0) {
@@ -194,12 +193,25 @@ static void	print_symbols(Elf64_Sym *symbols, char* str) {
 			uint8_t type = ELF64_ST_TYPE(symbols[i].st_info);
 			if (type != STT_FILE && type != STT_SECTION) {
 				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
+				if (symbol_list[symbol_idx] == NULL) {
+					dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
+				}
 				symbol_idx++;
 			}
 		}
 	}
+	dprintf(2, "before sort:\n");
+//	output_symbols(symbol_list, symbol_idx);
+	bubbleSort(symbol_list, symbol_idx);
+	dprintf(2, "after sort:\n");
 	output_symbols(symbol_list, symbol_idx);
-	free(symbol_list);
+
+	for (size_t i = 0; i < symbol_idx; i++) {
+		free(symbol_list[i]);
+		symbol_list[i] = NULL;
+	}
+//	printf("n items = %zu\n", symbol_idx);
+//	free(symbol_list);
 }
 
 int	handle_elf64(char* file, const uint64_t filesize) {

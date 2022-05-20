@@ -38,6 +38,7 @@ static int parse_magic_nb(char *file, const size_t filesize) {
 		}
 	}
 	else if (strncmp(file, ARMAG, SARMAG) == 0) {
+		dprintf(2, "Archive\n");
 		return (ARCHIVE); // Archive
 	}
 	return (INVALID); // INVALID

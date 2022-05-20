@@ -93,7 +93,7 @@ static Elf64_Shdr	*stringtable_sectionheader = NULL;
 /*
  * https://stackoverflow.com/questions/15225346/how-to-display-the-symbols-type-like-the-nm-command
  */
-char            print_type(Elf64_Sym sym)
+static char            print_type(Elf64_Sym sym)
 {
 	char  c;
 	Elf64_Section st_shndx = REV16(sym.st_shndx);
@@ -158,7 +158,7 @@ static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *symstr) {
 	return (symbol);
 }
 
-void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
+static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
 	for (Elf64_Half i = 0; i < n_elems; i++) {
 		const t_symbol *symbol = symbols[i];
 		if (symbol->name == NULL) {
@@ -168,7 +168,7 @@ void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
 		if (symbol->value == 0)
 			printf("%16s ", "");
 		else
-			printf("%016lx ", symbol->value);
+			printf("%016llx ", symbol->value);
 		printf("%c ", symbol->letter);
 		printf("%s", symbol->name);
 //		printf("\t\tshndx=%u,", symbol.shndx);
@@ -215,7 +215,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str) {
 }
 
 int	handle_elf64(char* file, const uint64_t filesize) {
-	Elf64_Ehdr *hdr;
+	Elf64_Ehdr	*hdr;
 	uint8_t		endianness;
 	char		*sectionNames_stringTable; // Section header string table
 	char		*str;
@@ -249,7 +249,7 @@ int	handle_elf64(char* file, const uint64_t filesize) {
 			symboltable_sectionheader = &shdr_begin[i];
 		} else if (REV32(shdr_begin[i].sh_type) == SHT_STRTAB && strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
 			stringtable_sectionheader = &shdr_begin[i];
-			dprintf(2, "stringtable at %p, sh_offset = %lu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
+			dprintf(2, "stringtable at %p, sh_offset = %llu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
 		}
 	}
 	if (!symboltable_sectionheader) {

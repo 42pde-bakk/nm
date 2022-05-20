@@ -1,9 +1,21 @@
-#version: '3'
+version: '3'
 
-nm:
-  build: ./
-  volumes:
-  - ./linux:/code
-  tty: true
-  container_name: pde-bakk_nm
-# From: https://github.com/shuhaoliu/docker-clion-dev/blob/master/docker-compose.yml
+services:
+
+  nm64:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Debian64.Dockerfile
+    volumes:
+    - ./linux:/code
+    tty: true
+    container_name: nm64_pde-bakk
+
+  nm32:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Debian32.Dockerfile
+    volumes:
+      - ./linux:/code
+    tty: true
+    container_name: nm32_pde-bakk

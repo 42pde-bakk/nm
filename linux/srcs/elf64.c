@@ -168,7 +168,11 @@ static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
 		if (symbol->value == 0)
 			printf("%16s ", "");
 		else
+#ifdef __i386__
 			printf("%016llx ", symbol->value);
+#else
+			printf("%016lx ", symbol->value);
+#endif
 		printf("%c ", symbol->letter);
 		printf("%s", symbol->name);
 //		printf("\t\tshndx=%u,", symbol.shndx);
@@ -249,7 +253,7 @@ int	handle_elf64(char* file, const uint64_t filesize) {
 			symboltable_sectionheader = &shdr_begin[i];
 		} else if (REV32(shdr_begin[i].sh_type) == SHT_STRTAB && strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
 			stringtable_sectionheader = &shdr_begin[i];
-			dprintf(2, "stringtable at %p, sh_offset = %llu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
+//			dprintf(2, "stringtable at %p, sh_offset = %llu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
 		}
 	}
 	if (!symboltable_sectionheader) {

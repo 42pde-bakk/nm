@@ -166,7 +166,11 @@ static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems) {
 		if (symbol->value == 0)
 			printf("%8s ", "");
 		else
+#ifdef __i386__
 			printf("%08llx ", symbol->value);
+#else
+			printf("%08lx ", symbol->value);
+#endif
 		printf("%c ", symbol->letter);
 		printf("%s", symbol->name);
 //		printf("\t\tshndx=%u,", symbol.shndx);

@@ -1,5 +1,5 @@
 # Debian 64 bit system:
-FROM debian:9
+FROM debian:11
 WORKDIR /code
 
 RUN apt-get update && apt-get upgrade -y

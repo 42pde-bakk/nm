@@ -1,5 +1,5 @@
 # Debian 32 bit system:
-FROM i386/debian:9
+FROM i386/debian:11
 WORKDIR /code
 
 RUN apt-get update && apt-get upgrade -y

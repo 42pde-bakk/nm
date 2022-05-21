@@ -94,9 +94,9 @@ static Elf32_Shdr	*stringtable_sectionheader = NULL;
 static char            print_type(Elf32_Sym sym)
 {
 	char  c;
-	Elf32_Section st_shndx = REV16(sym.st_shndx);
-	Elf32_Word	sh_type = REV32(shdr_begin[st_shndx].sh_type);
-	Elf32_Word	sh_flags = REV32(shdr_begin[st_shndx].sh_flags);
+	Elf32_Section st_shndx = sym.st_shndx;
+	Elf32_Word	sh_type = shdr_begin[st_shndx].sh_type;
+	Elf32_Word	sh_flags = shdr_begin[st_shndx].sh_flags;
 
 	if (ELF32_ST_BIND(sym.st_info) == STB_GNU_UNIQUE)
 		c = 'u';
@@ -146,11 +146,11 @@ static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *symstr) {
 
 	if (symbol == NULL)
 		return (NULL);
-	symbol->name = symstr + REV32(sym->st_name);
+	symbol->name = symstr + sym->st_name;
 	symbol->type = ELF32_ST_TYPE(sym->st_info);
 	symbol->bind = ELF32_ST_BIND(sym->st_info);
-	symbol->shndx = REV16(sym->st_info);
-	symbol->value = REV32(sym->st_value);
+	symbol->shndx = sym->st_info;
+	symbol->value = sym->st_value;
 	symbol->letter = print_type(*sym);
 
 	return (symbol);
@@ -183,14 +183,14 @@ static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems) {
 }
 
 static void	print_symbols(Elf32_Sym *symbols, char* str) {
-	size_t		entries_amount = REV32(symboltable_sectionheader->sh_size) / REV32(symboltable_sectionheader->sh_entsize);
+	size_t		entries_amount = symboltable_sectionheader->sh_size / symboltable_sectionheader->sh_entsize;
 	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
 
 	memset(symbol_list, 0, entries_amount * sizeof(t_symbol));
 
 	for (size_t i = 0; i < entries_amount; i++) {
-		if (REV32(symbols[i].st_name) != 0) {
+		if (symbols[i].st_name != 0) {
 //			dprintf(2, "i = %zu, st_name: %u name: %s\n", i, symbols[i].st_name, (char *)(str + symbols[i].st_name));
 			uint8_t type = ELF32_ST_TYPE(symbols[i].st_info);
 			if (type != STT_FILE && type != STT_SECTION) {
@@ -235,21 +235,21 @@ int	handle_elf32(char* file, const uint32_t filesize) {
 		return (1);
 	}
 
-	shdr_begin = (Elf32_Shdr *)(file + REV32(hdr->e_shoff));
+	shdr_begin = (Elf32_Shdr *)(file + hdr->e_shoff);
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
 		dprintf(2, "ft_nm: Invalid version!\n");
 		return (1);
 	}
 
-	sectionNames_stringTable = (char *)(file + REV32(shdr_begin[REV32(hdr->e_shstrndx)].sh_offset));
+	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
 	dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
 
-	for (Elf32_Half i = 0; i < REV16(hdr->e_shnum); i++) {
+	for (Elf32_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
-		if (REV32(shdr_begin[i].sh_type) == SHT_SYMTAB && strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
+		if (shdr_begin[i].sh_type == SHT_SYMTAB && strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
 			symboltable_sectionheader = &shdr_begin[i];
-		} else if (REV32(shdr_begin[i].sh_type) == SHT_STRTAB && strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
+		} else if (shdr_begin[i].sh_type == SHT_STRTAB && strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
 			stringtable_sectionheader = &shdr_begin[i];
 			dprintf(2, "stringtable at %p, sh_offset = %u\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
 		}
@@ -258,8 +258,8 @@ int	handle_elf32(char* file, const uint32_t filesize) {
 		dprintf(2, "ft_nm: No symbols\n");
 		return (0);
 	}
-	Elf32_Sym	*symbols = (Elf32_Sym *)(file + REV32(symboltable_sectionheader->sh_offset));
-	str = (char *)(file + REV32(stringtable_sectionheader->sh_offset));
+	Elf32_Sym	*symbols = (Elf32_Sym *)(file + (symboltable_sectionheader->sh_offset));
+	str = (char *)(file + (stringtable_sectionheader->sh_offset));
 	print_symbols(symbols, str);
 
 	return (0);

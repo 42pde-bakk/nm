@@ -34,8 +34,9 @@ e_endian	get_endianess() {
 	return (BIG);
 }
 
-void		set_shouldReverse(int myEndian, int theirEndian) {
+bool set_shouldReverse(int myEndian, int theirEndian) {
 	g_shouldReverse = (myEndian != theirEndian);
+	return (g_shouldReverse);
 }
 
 uint16_t REV16(uint16_t x) {

@@ -41,21 +41,22 @@ typedef struct	s_symbol {
 typedef int (*handle_func)();
 int	handle_elf32(char* file, uint32_t offset);
 int	handle_archive(char* file, uint32_t offset);
-int	handle_elf64(char* file, uint64_t filesize);
+int	handle_elf64(char* file, uint32_t filesize);
 
 /*
  * srcs/endian.c
  */
 e_endian	check_endian(int e_ident);
 e_endian	get_endianess();
-void		set_shouldReverse(int myEndian, int theirEndian);
+bool set_shouldReverse(int myEndian, int theirEndian);
 
-uint16_t	REV16(uint16_t x); // Reverses if needed for 32bits
-uint32_t	REV32(uint32_t x); // Reverses if needed for 32bits
-uint64_t	REV64(uint64_t x); // Reverses if needed for 64bits
+// Opted not to use it since I can't find Big endian systems to test it out on
+//uint16_t	REV16(uint16_t x); // Reverses if needed for 32bits
+//uint32_t	REV32(uint32_t x); // Reverses if needed for 32bits
+//uint64_t	REV64(uint64_t x); // Reverses if needed for 64bits
 
 /*
- * srcs/radixsort.c
+ * srcs/sort.c
  */
 typedef int idx_t;
 void	quickSort(t_symbol *symbols[], idx_t low, idx_t high);

@@ -36,6 +36,7 @@ typedef struct	s_symbol {
 	uint16_t		shndx;
 	uint64_t		value;
 	unsigned char	letter;
+	void			*symbol_ptr;
 }				t_symbol;
 
 #define FLAG_a 0b0010000 // Debug symbols

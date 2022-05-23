@@ -38,10 +38,26 @@ typedef struct	s_symbol {
 	unsigned char	letter;
 }				t_symbol;
 
+#define FLAG_a 0b0010000 // Debug symbols
+#define FLAG_g 0b0001000 // Extern symbols only
+#define FLAG_u 0b0000100 // Undefined symbols only
+#define FLAG_r 0b0000010 // No sort
+#define FLAG_p 0b0000001 // reverse sort
+#define FLAG_h 0b1000000 // Display help
+#define FLAG_V 0b0100000 // Display version number
+#define NM_VERSION 69
+#define GITHUB_LINK "https://github.com/42pde-bakk/nm"
+
 typedef int (*handle_func)();
-int	handle_elf32(char* file, uint32_t offset);
-int	handle_archive(char* file, uint32_t offset);
-int	handle_elf64(char* file, uint32_t filesize);
+int handle_elf32(char *file, uint32_t offset, unsigned int flags);
+int handle_archive(char *file, uint32_t offset, unsigned int flags);
+int handle_elf64(char *file, uint32_t filesize, unsigned int flags);
+
+/*
+ * srcs/parse_options.c
+ */
+
+unsigned int parse_options(int argc, char **argv, int *error);
 
 /*
  * srcs/endian.c
@@ -59,7 +75,7 @@ bool set_shouldReverse(int myEndian, int theirEndian);
  * srcs/sort.c
  */
 typedef int idx_t;
-void	quickSort(t_symbol *symbols[], idx_t low, idx_t high);
+void quickSort(t_symbol *symbols[], idx_t low, idx_t high, const unsigned int flags);
 
 
 #endif //NM_NM_H

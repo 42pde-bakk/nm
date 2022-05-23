@@ -4,9 +4,15 @@ OPTIONS=$"$2"
 exit_status=0
 
 for filename in $FILES; do
-  echo "Calling nm on " "$filename" " with options $OPTIONS"
-  ./ft_nm "$filename" > diff1.txt 2> /dev/null
-  nm "$filename" > diff2.txt 2> /dev/null
+  echo "Calling nm on" "'$filename'" "with options $OPTIONS"
+  if [[ $OPTIONS ]]; then
+    ./ft_nm "$OPTIONS" "$filename" > diff1.txt 2> /dev/null
+    nm "$OPTIONS" "$filename" > diff2.txt 2> /dev/null
+  else
+    ./ft_nm "$filename" > diff1.txt 2> /dev/null
+    nm "$filename" > diff2.txt 2> /dev/null
+  fi
+
   diff diff1.txt diff2.txt
   diff_statuscode=$?
   if [[ $diff_statuscode -ne 0 ]]; then

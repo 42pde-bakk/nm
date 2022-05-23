@@ -182,7 +182,7 @@ static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems) {
 	}
 }
 
-static void	print_symbols(Elf32_Sym *symbols, char* str) {
+static void	print_symbols(Elf32_Sym *symbols, char* str, const unsigned int flags) {
 	size_t		entries_amount = symboltable_sectionheader->sh_size / symboltable_sectionheader->sh_entsize;
 	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
@@ -202,27 +202,25 @@ static void	print_symbols(Elf32_Sym *symbols, char* str) {
 			}
 		}
 	}
-	dprintf(2, "before sort:\n");
-//	output_symbols(symbol_list, symbol_idx);
-	quickSort(symbol_list, 0, (idx_t)(symbol_idx - 1));
-	dprintf(2, "after sort:\n");
+	if (!(flags & FLAG_p)) {
+		quickSort(symbol_list, 0, (idx_t) (symbol_idx - 1), flags);
+	}
 	output_symbols(symbol_list, symbol_idx);
 
 	for (size_t i = 0; i < symbol_idx; i++) {
 		free(symbol_list[i]);
 		symbol_list[i] = NULL;
 	}
-//	printf("n items = %zu\n", symbol_idx);
-//	free(symbol_list);
 }
 
-int	handle_elf32(char* file, const uint32_t filesize) {
+int handle_elf32(char *file, uint32_t offset, const unsigned int flags) {
 	Elf32_Ehdr	*hdr;
 	uint8_t		endianness;
 	char		*sectionNames_stringTable; // Section header string table
 	char		*str;
 
-	if (filesize < sizeof(Elf32_Ehdr)) {
+	(void)flags;
+	if (offset < sizeof(Elf32_Ehdr)) {
 		dprintf(2, "ft_nm: No symbols\n");
 		return (1);
 	}
@@ -260,7 +258,7 @@ int	handle_elf32(char* file, const uint32_t filesize) {
 	}
 	Elf32_Sym	*symbols = (Elf32_Sym *)(file + (symboltable_sectionheader->sh_offset));
 	str = (char *)(file + (stringtable_sectionheader->sh_offset));
-	print_symbols(symbols, str);
+	print_symbols(symbols, str, flags);
 
 	return (0);
 }

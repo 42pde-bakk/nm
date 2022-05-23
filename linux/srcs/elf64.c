@@ -17,6 +17,12 @@ static Elf64_Shdr	*shdr_begin = NULL;
 static Elf64_Shdr	*symboltable_sectionheader = NULL;
 static Elf64_Shdr	*stringtable_sectionheader = NULL;
 
+void	clean_globals() {
+	shdr_begin = NULL;
+	symboltable_sectionheader = NULL;
+	stringtable_sectionheader = NULL;
+}
+
 //static Elf64_Ehdr	*parseElfHeader64(char* file) {
 //	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file;
 //
@@ -160,28 +166,23 @@ static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *symstr) {
 	return (symbol);
 }
 
-static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
+static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems, const unsigned int flags) {
+	(void)flags;
 	for (Elf64_Half i = 0; i < n_elems; i++) {
 		const t_symbol *symbol = symbols[i];
 		if (symbol->name == NULL) {
 			continue ;
 		}
-		if (symbol->value == 0)
-			ft_printf("%16s ", "");
-		else
+		if (symbol->letter == 'U' || symbol->letter == 'w') {
+			ft_printf("%18c %s\n", symbol->letter, symbol->name);
+		}
+		else {
 #ifdef __i386__
-			printf("%016llx ", symbol->value);
+			ft_printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->name);
 #else
-			ft_printf("%016lx ", symbol->value);
+			ft_printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->name);
 #endif
-		ft_printf("%c ", symbol->letter);
-		ft_printf("%s", symbol->name);
-//		ft_printf("\t\tshndx=%u,", symbol.shndx);
-//		ft_printf(", bind=%#x ", symbol.bind);
-//		ft_printf(", type=%#x", symbol.type);
-//		ft_printf(", section index type= %#x", shdr_begin[symbol.shndx].sh_type);
-//		ft_printf(", sh_flags = %#lx", shdr_begin[symbol.shndx].sh_flags);
-		ft_printf("\n");
+		}
 	}
 }
 
@@ -208,7 +209,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flag
 	if (!(flags & FLAG_r)) {
 		quickSort(symbol_list, 0, (idx_t) (symbol_idx - 1), flags);
 	}
-	output_symbols(symbol_list, symbol_idx);
+	output_symbols(symbol_list, symbol_idx, flags);
 
 	for (size_t i = 0; i < symbol_idx; i++) {
 		free(symbol_list[i]);
@@ -222,7 +223,8 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 	char		*sectionNames_stringTable; // Section header string table
 	char		*str;
 
-	(void)flags;
+	clean_globals();
+
 	if (filesize < sizeof(Elf64_Ehdr)) {
 		ft_dprintf(2, "ft_nm: No symbols\n");
 		return (EXIT_FAILURE);

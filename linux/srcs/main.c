@@ -22,7 +22,7 @@ static int	error(const char* str) {
 	return (EXIT_FAILURE);
 }
 
-static int parse_magic_nb(char *file, const size_t filesize) {
+int parse_magic_nb(char *file, const size_t filesize) {
 	// check offset? idk
 	if (filesize < EI_CLASS) {
 		return (INVALID);
@@ -30,16 +30,16 @@ static int parse_magic_nb(char *file, const size_t filesize) {
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
 		if (file[EI_CLASS] == ELFCLASS32) {
-			dprintf(2, "ELF32\n");
+//			dprintf(2, "ELF32\n");
 			return (ELF32); // ELF32
 		}
 		else if (file[EI_CLASS] == ELFCLASS64) {
-			dprintf(2, "ELF64\n");
+//			dprintf(2, "ELF64\n");
 			return (ELF64); // ELF64
 		}
 	}
 	else if (strncmp(file, ARMAG, SARMAG) == 0) {
-		dprintf(2, "Archive\n");
+//		dprintf(2, "Archive\n");
 		return (ARCHIVE); // Archive
 	}
 	return (INVALID); // INVALID
@@ -65,8 +65,8 @@ int	print_usage(unsigned int flags) {
 }
 
 static int print_version() {
-	dprintf(2, "Peer nm %d\n", NM_VERSION);
-	dprintf(2, "\t%s\n", GITHUB_LINK);
+	ft_dprintf(2, "Peer nm %d\n", NM_VERSION);
+	ft_dprintf(2, "\t%s\n", GITHUB_LINK);
 	return (EXIT_SUCCESS);
 }
 
@@ -106,10 +106,10 @@ int	parse_file(const char* filename, unsigned int flags, bool has_multiple_files
 	}
 
 	uint32_t magic_nb = *(uint32_t *)file;
-	dprintf(2, "magic_nb: %x\n", magic_nb);
+	ft_dprintf(2, "magic_nb: %x\n", magic_nb);
 	e_type type = parse_magic_nb(file, buf.st_size);
 	if (type != INVALID && has_multiple_files) {
-		printf("%s:\n", filename);
+		ft_printf("\n%s:\n", filename);
 	}
 	handleFuncs[type](file, buf.st_size, flags);
 
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 	const bool			multiple_files = file_amount > 1;
 	int					ret = 0;
 
-	dprintf(2, "file_amount = %u\n", file_amount);
+	ft_dprintf(2, "file_amount = %u\n", file_amount);
 	if (flags & FLAG_h || parse_error) {
 		return (print_usage(flags));
 	} else if (flags & FLAG_V) {
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 	}
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') {
-			dprintf(2, "i = %d, argv[i] = %s\n, lets parse this file\n", i, argv[i]);
+			ft_dprintf(2, "i = %d, argv[i] = %s\n, lets parse this file\n", i, argv[i]);
 			ret |= parse_file(argv[i], flags, multiple_files);
 		}
 	}

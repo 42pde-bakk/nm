@@ -48,6 +48,7 @@ typedef struct	s_symbol {
 #define NM_VERSION 69
 #define GITHUB_LINK "https://github.com/42pde-bakk/nm"
 
+int parse_magic_nb(char *file, size_t filesize);
 typedef int (*handle_func)();
 int handle_elf32(char *file, uint32_t offset, unsigned int flags);
 int handle_archive(char *file, uint32_t offset, unsigned int flags);

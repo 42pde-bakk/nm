@@ -1,10 +1,16 @@
 NAME = ft_nm
-INCLUDE = -Iinclude
+INCLUDE = -Iinclude -Ilibftprintf/include -Ilibftprintf/libft/include
 HEADER = include/nm.h
 
 SRC_DIR = ./srcs
+OBJ_DIR = ./obj
+SRC_EXT = c
+OBJ_EXT = o
 SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(SRCS:.c=.o)
+OBJECTSS = $(SRCS:.c=.o)
+OBJS = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(OBJECTSS))
+
+LIBS = libftprintf.a
 
 # COLORS
 PINK = \x1b[35;01m
@@ -25,18 +31,26 @@ export DEBUG
 
 all: $(NAME)
 
-$(NAME): $(LIBS) $(OBJS) $(HEADER)
+$(NAME): directories $(LIBS) $(OBJS) $(HEADER)
 	$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) $(LIBS) -o $@
 	@printf "$(PINK)Done building ft_nm $(RESET)\n"
 
-%.o: %.c
+directories:
+	mkdir -p $(OBJ_DIR)
+
+%.a: %
+	$(MAKE) -C $< && cp $</$@ .
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) -c $(CFLAGS) $(INCLUDE) $^ -o $@
 
 clean:
 	/bin/rm -f $(OBJS)
 	@/bin/rm -f *.o *~ *.gch
+	$(MAKE) $@ -C libftprintf
 
 fclean: clean
 	/bin/rm -f $(NAME)
+	$(MAKE) $@ -C libftprintf
 
 re: fclean all

@@ -13,11 +13,12 @@
 #include <elf.h>
 #include <ar.h>
 #include <string.h>
+#include "ft_printf.h"
 
 static char* g_filename = NULL;
 
 static int	error(const char* str) {
-	dprintf(STDERR_FILENO, "Error. %s\n", str);
+	ft_dprintf(STDERR_FILENO, "Error. %s\n", str);
 	return (EXIT_FAILURE);
 }
 
@@ -46,20 +47,20 @@ static int parse_magic_nb(char *file, const size_t filesize) {
 
 int	handle_invalid(const char* file, const uint32_t size) {
 	(void)file; (void)size;
-	dprintf(2, "ft_nm: %s: file format not recognized\n", g_filename);
+	ft_dprintf(2, "ft_nm: %s: file format not recognized\n", g_filename);
 	return (1);
 }
 
 int	print_usage(unsigned int flags) {
-	dprintf(2, "List symbols in [file(s)] (%s by default).\n", DEFAULT_PATH);
-	dprintf(2, "The options are:\n");
-	dprintf(2, "\t-a\t\tDisplay debugger-only symbols\n");
-	dprintf(2, "\t-g\t\tDisplay only external symbols\n");
-	dprintf(2, "\t-u\t\tDisplay only undefined symbols\n");
-	dprintf(2, "\t-r\t\tReverse the sense of the sort\n");
-	dprintf(2, "\t-p\t\tDo not sort the symbols\n");
-	dprintf(2, "\t-h\t\tDisplay this information\n");
-	dprintf(2, "\t-V\t\tDisplay this program's version number\n\n");
+	ft_dprintf(2, "List symbols in [file(s)] (%s by default).\n", DEFAULT_PATH);
+	ft_dprintf(2, "The options are:\n");
+	ft_dprintf(2, "\t-a\t\tDisplay debugger-only symbols\n");
+	ft_dprintf(2, "\t-g\t\tDisplay only external symbols\n");
+	ft_dprintf(2, "\t-u\t\tDisplay only undefined symbols\n");
+	ft_dprintf(2, "\t-r\t\tReverse the sense of the sort\n");
+	ft_dprintf(2, "\t-p\t\tDo not sort the symbols\n");
+	ft_dprintf(2, "\t-h\t\tDisplay this information\n");
+	ft_dprintf(2, "\t-V\t\tDisplay this program's version number\n\n");
 	return !(flags & FLAG_h);
 }
 
@@ -126,10 +127,8 @@ int main(int argc, char** argv) {
 	const unsigned int	file_amount = count_files(argc, argv);
 	const bool			multiple_files = file_amount > 1;
 	int					ret = 0;
-//	char* filepath = argc == 1 ? DEFAULT_PATH : argv[1];
 
 	dprintf(2, "file_amount = %u\n", file_amount);
-
 	if (flags & FLAG_h || parse_error) {
 		return (print_usage(flags));
 	} else if (flags & FLAG_V) {

@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "libft.h"
+#include "ft_printf.h"
 
 static Elf64_Shdr	*shdr_begin = NULL;
 static Elf64_Shdr	*symboltable_sectionheader = NULL;
@@ -162,25 +164,24 @@ static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems) {
 	for (Elf64_Half i = 0; i < n_elems; i++) {
 		const t_symbol *symbol = symbols[i];
 		if (symbol->name == NULL) {
-			dprintf(2, "NULL\n");
 			continue ;
 		}
 		if (symbol->value == 0)
-			printf("%16s ", "");
+			ft_printf("%16s ", "");
 		else
 #ifdef __i386__
 			printf("%016llx ", symbol->value);
 #else
-			printf("%016lx ", symbol->value);
+			ft_printf("%016lx ", symbol->value);
 #endif
-		printf("%c ", symbol->letter);
-		printf("%s", symbol->name);
-//		printf("\t\tshndx=%u,", symbol.shndx);
-//		printf(", bind=%#x ", symbol.bind);
-//		printf(", type=%#x", symbol.type);
-//		printf(", section index type= %#x", shdr_begin[symbol.shndx].sh_type);
-//		printf(", sh_flags = %#lx", shdr_begin[symbol.shndx].sh_flags);
-		printf("\n");
+		ft_printf("%c ", symbol->letter);
+		ft_printf("%s", symbol->name);
+//		ft_printf("\t\tshndx=%u,", symbol.shndx);
+//		ft_printf(", bind=%#x ", symbol.bind);
+//		ft_printf(", type=%#x", symbol.type);
+//		ft_printf(", section index type= %#x", shdr_begin[symbol.shndx].sh_type);
+//		ft_printf(", sh_flags = %#lx", shdr_begin[symbol.shndx].sh_flags);
+		ft_printf("\n");
 	}
 }
 
@@ -189,7 +190,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flag
 	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
 
-	memset(symbol_list, 0, entries_amount * sizeof(t_symbol));
+	ft_memset(symbol_list, 0, entries_amount * sizeof(t_symbol));
 
 	for (size_t i = 0; i < entries_amount; i++) {
 		if (symbols[i].st_name != 0) {
@@ -198,7 +199,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flag
 			if (type != STT_FILE && type != STT_SECTION) {
 				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
 				if (symbol_list[symbol_idx] == NULL) {
-					dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
+					ft_dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
 				}
 				symbol_idx++;
 			}
@@ -223,25 +224,25 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 
 	(void)flags;
 	if (filesize < sizeof(Elf64_Ehdr)) {
-		dprintf(2, "ft_nm: No symbols\n");
+		ft_dprintf(2, "ft_nm: No symbols\n");
 		return (EXIT_FAILURE);
 	}
 	hdr = (Elf64_Ehdr *)file;
 	endianness = check_endian(hdr->e_ident[EI_DATA]);
 	if (set_shouldReverse(get_endianess(), endianness)) {
-		dprintf(2, "Not handling differing endianness. Sorry not sorry\n");
+		ft_dprintf(2, "Not handling differing endianness. Sorry not sorry\n");
 		return (EXIT_FAILURE);
 	}
 
 	if (hdr->e_shoff == 0) {
-		dprintf(2, "ft_nm: No symbols\n");
+		ft_dprintf(2, "ft_nm: No symbols\n");
 		return (1);
 	}
 
 	shdr_begin = (Elf64_Shdr *)(file + hdr->e_shoff);
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
-		dprintf(2, "ft_nm: Invalid version!\n");
+		ft_dprintf(2, "ft_nm: Invalid version!\n");
 		return (1);
 	}
 
@@ -250,15 +251,15 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 
 	for (Elf64_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
-		if (shdr_begin[i].sh_type == SHT_SYMTAB && strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
+		if (shdr_begin[i].sh_type == SHT_SYMTAB && ft_strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
 			symboltable_sectionheader = &shdr_begin[i];
-		} else if (shdr_begin[i].sh_type == SHT_STRTAB && strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
+		} else if (shdr_begin[i].sh_type == SHT_STRTAB && ft_strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
 			stringtable_sectionheader = &shdr_begin[i];
 //			dprintf(2, "stringtable at %p, sh_offset = %llu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
 		}
 	}
 	if (!symboltable_sectionheader) {
-		dprintf(2, "ft_nm: No symbols\n");
+		ft_dprintf(2, "ft_nm: No symbols\n");
 		return (0);
 	}
 	Elf64_Sym	*symbols = (Elf64_Sym *)(file + (symboltable_sectionheader->sh_offset));

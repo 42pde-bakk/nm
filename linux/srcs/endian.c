@@ -8,9 +8,6 @@
 #include <stdbool.h>
 
 bool	g_shouldReverse;
-//extern bool g_shouldReverse16;
-//extern bool g_shouldReverse32;
-//extern bool g_shouldReverse64;
 
 e_endian	check_endian(const int e_ident) {
 	switch (e_ident) {

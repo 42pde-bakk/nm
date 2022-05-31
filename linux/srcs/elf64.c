@@ -18,8 +18,6 @@ static Elf64_Shdr	*symboltable_sectionheader = NULL;
 static Elf64_Shdr	*stringtable_sectionheader = NULL;
 static char		*sectionNames_stringTable; // Section header string table
 
-static int logfile_fd = -1;
-
 typedef struct	section_to_letter {
 	const char*	section;
 	char	letter;
@@ -74,7 +72,7 @@ static const char*	get_sectionnameee(const char *str) {
 	return ("NOPE");
 }
 
-void	clean_globals() {
+void	reset_globals() {
 	shdr_begin = NULL;
 	symboltable_sectionheader = NULL;
 	stringtable_sectionheader = NULL;
@@ -258,15 +256,12 @@ static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems, const unsign
 		}
 		if (symbol->letter == 'U' || symbol->letter == 'w') {
 			printf("%18c %s\n", symbol->letter, symbol->name);
-//			dprintf(logfile_fd, "%18c %s %s\n", symbol->letter, symbol->name, sectionName);
 		}
 		else {
 #ifdef __i386__
 			printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->sectionName);
-//			dprintf(logfile_fd, "%016llx %c %s %s\n", symbol->value, symbol->letter, symbol->sectionName, name);
 #else
 			printf("%016lx %c %s\n", symbol->value, symbol->letter, symbol->name);
-//			dprintf(logfile_fd, "%016lx %c %s %s\n", symbol->value, symbol->letter, symbol->name, sectionName);
 #endif
 		}
 	}
@@ -305,36 +300,33 @@ static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flag
 
 int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 	Elf64_Ehdr	*hdr;
-	uint8_t		endianness;
 	char		*str;
+	char*		file_end = file + filesize;
 
-	if (logfile_fd == -1) {
-		logfile_fd = open("log.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	}
-
-	clean_globals();
+	reset_globals();
 
 	if (filesize < sizeof(Elf64_Ehdr)) {
-		dprintf(2, "ft_nm: No symbols\n");
+		dprintf(STDERR_FILENO, "ft_nm: No symbols\n");
 		return (EXIT_FAILURE);
 	}
 	hdr = (Elf64_Ehdr *)file;
-	endianness = check_endian(hdr->e_ident[EI_DATA]);
+	uint8_t	endianness = check_endian(hdr->e_ident[EI_DATA]);
 	if (set_shouldReverse(get_endianess(), endianness)) {
-		dprintf(2, "Not handling differing endianness. Sorry not sorry\n");
-		return (EXIT_FAILURE);
+		return (fatal_error("Not handling differing endianness. Sorry not sorry"));
 	}
 
 	if (hdr->e_shoff == 0) {
-		dprintf(2, "ft_nm: No symbols\n");
-		return (1);
+		dprintf(STDERR_FILENO, "ft_nm: No symbols\n");
+		return (EXIT_FAILURE);
 	}
 
 	shdr_begin = (Elf64_Shdr *)(file + hdr->e_shoff);
+	if ((char*)shdr_begin >= file_end) {
+		return (fatal_error("Invalid file (shdr_begin outside of file)"));
+	}
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
-		dprintf(2, "ft_nm: Invalid version!\n");
-		return (1);
+		return (fatal_error( "ft_nm: Invalid version!"));
 	}
 
 	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
@@ -342,6 +334,9 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 
 	for (Elf64_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
+		if (sectionName >= file_end) {
+			return (fatal_error("Bad file (sectionName outside of file)"));
+		}
 //		dprintf(2, "sectionName: %s\n", sectionName);
 		if (shdr_begin[i].sh_type == SHT_SYMTAB && ft_strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
 			symboltable_sectionheader = &shdr_begin[i];
@@ -351,12 +346,17 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 		}
 	}
 	if (!symboltable_sectionheader) {
-		dprintf(2, "ft_nm: No symbols\n");
-		return (0);
+		return (fatal_error("ft_nm: No symbols"));
 	}
 	Elf64_Sym	*symbols = (Elf64_Sym *)(file + (symboltable_sectionheader->sh_offset));
+	if ((char *)symbols >= file_end) {
+		return (fatal_error("Bad file (symbols outside of file)"));
+	}
 	str = (char *)(file + (stringtable_sectionheader->sh_offset));
+	if (str >= file_end) {
+		return (fatal_error("Bad file (str outside of file)"));
+	}
 	print_symbols(symbols, str, flags);
 
-	return (0);
+	return (EXIT_SUCCESS);
 }

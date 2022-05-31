@@ -77,7 +77,11 @@ bool set_shouldReverse(int myEndian, int theirEndian);
  * srcs/sort.c
  */
 typedef int idx_t;
-void quickSort(t_symbol *symbols[], idx_t low, idx_t high, const unsigned int flags);
+void quickSort(t_symbol *symbols[], idx_t low, idx_t high, unsigned int flags);
 
+/*
+ * srcs/utils.c
+ */
+int fatal_error(const char* error_msg);
 
 #endif //NM_NM_H

@@ -3,5 +3,5 @@ project(nm C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(ft_nm include/nm.h srcs/main.c srcs/elf32.c srcs/elf64.c srcs/archive.c srcs/endian.c srcs/sort.c srcs/parse_options.c)
+add_executable(ft_nm include/nm.h srcs/main.c srcs/elf32.c srcs/elf64.c srcs/archive.c srcs/endian.c srcs/sort.c srcs/parse_options.c srcs/utils.c)
 include_directories(include libftprintf/include libftprintf/libft/include)

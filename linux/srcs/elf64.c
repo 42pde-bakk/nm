@@ -11,35 +11,37 @@
 #include <string.h>
 #include <assert.h>
 #include "libft.h"
-#include "ft_printf.h"
+#include <fcntl.h>
 
 static Elf64_Shdr	*shdr_begin = NULL;
 static Elf64_Shdr	*symboltable_sectionheader = NULL;
 static Elf64_Shdr	*stringtable_sectionheader = NULL;
 static char		*sectionNames_stringTable; // Section header string table
 
+static int logfile_fd = -1;
+
 typedef struct	section_to_letter {
 	const char*	section;
-	const char	letter;
+	char	letter;
 }				t_section_to_letter;
 
 static const t_section_to_letter stt[] = {
 		{".bss", 'b'},
-		{"*DEBUG*", 'N'},
-		{".debug", 'N'},
-		{".drectve", 'i'},
-		{".edata", 'e'},
-		{".fini", 't'},
-		{".idata", 'i'},
+//		{"*DEBUG*", 'N'},
+//		{".debug", 'N'},
+//		{".drectve", 'i'},
+//		{".edata", 'e'},
+//		{".fini", 't'},
+//		{".idata", 'i'},
 		{".init", 't'},
-		{".pdata", 'p'},
+//		{".pdata", 'p'},
 		{".rdata", 'r'},
 		{".rodata", 'r'},
 		{".sbss", 's'},
 		{".scommon", 'c'},
-		{".sdata", 'g'},
-		{"vars", 'd'},
-		{"zerovars", 'b'},
+//		{".sdata", 'g'},
+//		{"vars", 'd'},
+//		{"zerovars", 'b'},
 		{NULL, '?'}
 };
 
@@ -47,9 +49,13 @@ static char	get_letter_from_sectionname(const char *str) {
 	const size_t size = sizeof(stt) / sizeof(stt[0]);
 	for (size_t i = 0; i < size; i++) {
 		const t_section_to_letter	*stl = &stt[i];
+		if (stl->section == NULL) {
+			return ('?');
+		}
 //		dprintf(2, "size = %zu, i = %zu, section: %s, letter: %c\n", size, i, stl->section, stl->letter);
-		if (stl->section != NULL && ft_strncmp(stl->section, str, ft_strlen(stl->section)) == 0) {
+		if (ft_strncmp(stl->section, str, ft_strlen(stl->section)) == 0) {
 			// found our match
+//			dprintf(logfile_fd, "str = %s, section = %s, letter = %c, value = %lx\n", str, stl->section, stl->letter, value);
 			return (stl->letter);
 		}
 	}
@@ -60,7 +66,6 @@ static const char*	get_sectionnameee(const char *str) {
 	const size_t size = sizeof(stt) / sizeof(stt[0]);
 	for (size_t i = 0; i < size; i++) {
 		const t_section_to_letter	*stl = &stt[i];
-//		dprintf(2, "size = %zu, i = %zu, section: %s, letter: %c\n", size, i, stl->section, stl->letter);
 		if (stl->section != NULL && ft_strncmp(stl->section, str, ft_strlen(stl->section)) == 0) {
 			// found our match
 			return (stl->section);
@@ -68,7 +73,6 @@ static const char*	get_sectionnameee(const char *str) {
 	}
 	return ("NOPE");
 }
-
 
 void	clean_globals() {
 	shdr_begin = NULL;
@@ -165,59 +169,64 @@ const char*	get_section(Elf64_Sym *sym) {
  */
 static char            print_type(Elf64_Sym sym)
 {
-	char  c;
+	char  c = 0;
 	Elf64_Section st_shndx = sym.st_shndx;
+	uint8_t		st_type = ELF64_ST_TYPE(sym.st_info);
+	uint8_t		st_bind = ELF64_ST_BIND(sym.st_info);
 	Elf64_Shdr	symbol_header = shdr_begin[st_shndx];
 	Elf64_Word	sh_type = symbol_header.sh_type;
 	Elf64_Word	sh_flags = symbol_header.sh_flags;
-
 	const char* name = (const char *)(sectionNames_stringTable + symbol_header.sh_name);
-//	dprintf(1, "name = %s\n", name);
 
-//	if ((c = get_letter_from_sectionname(name)) != '?') {
-//		return (c);
+	if (st_shndx == SHN_COMMON) {
+		return 'C';
+	}
+	else if (st_shndx == SHN_UNDEF) {
+		if (st_bind == STB_WEAK) {
+			return (st_type == STT_OBJECT) ? 'v' : 'w';
+		}
+		return 'U';
+	}
+
+//	if (st_type == STT_GNU_IFUNC) {
+//		return 'i';
 //	}
+	if (st_bind == STB_WEAK) {
+		return (st_type == STT_OBJECT) ? 'V' : 'W';
+	}
 
-	if (ELF64_ST_BIND(sym.st_info) == STB_GNU_UNIQUE)
-		c = 'u';
-	else if (ELF64_ST_BIND(sym.st_info) == STB_WEAK && ELF64_ST_TYPE(sym.st_info) == STT_OBJECT)
-	{
-		c = 'V';
-		if (st_shndx == SHN_UNDEF)
-			c = 'v';
+	if (st_bind != STB_GLOBAL && st_bind != STB_LOCAL) {
+		return 'u';
 	}
-	else if (ELF64_ST_BIND(sym.st_info) == STB_WEAK)
-	{
-		c = 'W';
-		if (st_shndx == SHN_UNDEF)
-			c = 'w';
+
+	if (st_shndx != SHN_ABS) {
+		if ((c = get_letter_from_sectionname(name))) {
+			if (st_type == STT_FUNC || sh_flags & SHF_EXECINSTR) {
+				c = 't';
+			}
+			else if (sh_type == SHT_PROGBITS || sh_type == SHT_HASH || sh_type == SHT_NOTE || sh_type == SHT_INIT_ARRAY || sh_type == SHT_FINI_ARRAY || sh_type == SHT_PREINIT_ARRAY || sh_type == SHT_GNU_LIBLIST || sh_type == SHT_GNU_HASH || sh_type == SHT_DYNAMIC) {
+				if (!(sh_flags & SHF_WRITE)) { // read-only
+					c = 'r';
+				} else if (sh_flags & SHF_COMPRESSED) {
+					c = 'g';
+				} else {
+					c = 'd';
+				}
+			}
+			else if (sh_flags & SHF_ALLOC) {
+				if (sh_flags & SHF_COMPRESSED) {
+					c = 's';
+				} else {
+					c = 'b';
+				}
+			} else if (symbol_header.sh_offset && !(sh_flags & SHF_WRITE))
+				c = 'n';
+		}
 	}
-	else if (st_shndx == SHN_UNDEF)
-		c = 'U';
-	else if (st_shndx == SHN_ABS)
-		c = 'A';
-	else if (st_shndx == SHN_COMMON)
-		c = 'C';
-	else if (sh_type == SHT_NOBITS && sh_flags == (SHF_ALLOC | SHF_WRITE))
-		c = 'B';
-	else if (sh_type == SHT_PROGBITS && sh_flags == SHF_ALLOC)
-		c = 'R';
-	else if (sh_type == SHT_PROGBITS && sh_flags == (SHF_ALLOC | SHF_WRITE))
-		c = 'D';
-	else if (sh_type == SHT_PREINIT_ARRAY && sh_flags == (SHF_ALLOC | SHF_WRITE))
-		c = 'D';
-	else if (sh_type == SHT_PROGBITS && sh_flags == (SHF_ALLOC | SHF_EXECINSTR))
-		c = 'T';
-	else if (ELF64_ST_BIND(sym.st_info) == STB_LOCAL && (sh_type == SHT_INIT_ARRAY || sh_type == SHT_FINI_ARRAY)) {
-		c = 'T';
+
+	if (st_bind == STB_GLOBAL && c >= 'a' && c <= 'z') {
+		c -= 32;
 	}
-	else if (sh_type == SHT_DYNAMIC)
-		c = 'D';
-	else {
-		c = get_letter_from_sectionname(name);
-	}
-	if (ELF64_ST_BIND(sym.st_info) == STB_LOCAL && c != '?')
-		c += 32;
 	return c;
 }
 
@@ -237,23 +246,27 @@ static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *symstr) {
 	return (symbol);
 }
 
+
 static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems, const unsigned int flags) {
 	(void)flags;
 	for (Elf64_Half i = 0; i < n_elems; i++) {
 		const t_symbol *symbol = symbols[i];
+		const char* sectionName = get_section((Elf64_Sym *)symbol->symbol_ptr);
+		(void)sectionName;
 		if (symbol->name == NULL) {
 			continue ;
 		}
 		if (symbol->letter == 'U' || symbol->letter == 'w') {
-			ft_printf("%18c %s\n", symbol->letter, symbol->name);
+			printf("%18c %s\n", symbol->letter, symbol->name);
+//			dprintf(logfile_fd, "%18c %s %s\n", symbol->letter, symbol->name, sectionName);
 		}
 		else {
 #ifdef __i386__
-			ft_printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->name);
+			printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->sectionName);
+//			dprintf(logfile_fd, "%016llx %c %s %s\n", symbol->value, symbol->letter, symbol->sectionName, name);
 #else
-//			ft_printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->name);
-			ft_printf("%016llx %c %s %s\n", symbol->value, symbol->letter, symbol->name, get_section(symbol->symbol_ptr));
-//			ft_printf("%016llx %c %s %#hx %#hx %#x\n", symbol->value, symbol->letter, symbol->name, symbol->type, symbol->bind, symbol->shndx);
+			printf("%016lx %c %s\n", symbol->value, symbol->letter, symbol->name);
+//			dprintf(logfile_fd, "%016lx %c %s %s\n", symbol->value, symbol->letter, symbol->name, sectionName);
 #endif
 		}
 	}
@@ -273,7 +286,7 @@ static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flag
 			if (type != STT_FILE && type != STT_SECTION) {
 				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
 				if (symbol_list[symbol_idx] == NULL) {
-					ft_dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
+					dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
 				}
 				symbol_idx++;
 			}
@@ -295,37 +308,41 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 	uint8_t		endianness;
 	char		*str;
 
+	if (logfile_fd == -1) {
+		logfile_fd = open("log.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	}
+
 	clean_globals();
 
 	if (filesize < sizeof(Elf64_Ehdr)) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (EXIT_FAILURE);
 	}
 	hdr = (Elf64_Ehdr *)file;
 	endianness = check_endian(hdr->e_ident[EI_DATA]);
 	if (set_shouldReverse(get_endianess(), endianness)) {
-		ft_dprintf(2, "Not handling differing endianness. Sorry not sorry\n");
+		dprintf(2, "Not handling differing endianness. Sorry not sorry\n");
 		return (EXIT_FAILURE);
 	}
 
 	if (hdr->e_shoff == 0) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (1);
 	}
 
 	shdr_begin = (Elf64_Shdr *)(file + hdr->e_shoff);
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
-		ft_dprintf(2, "ft_nm: Invalid version!\n");
+		dprintf(2, "ft_nm: Invalid version!\n");
 		return (1);
 	}
 
 	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
-	dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
+//	dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
 
 	for (Elf64_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
-		dprintf(2, "sectionName: %s\n", sectionName);
+//		dprintf(2, "sectionName: %s\n", sectionName);
 		if (shdr_begin[i].sh_type == SHT_SYMTAB && ft_strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
 			symboltable_sectionheader = &shdr_begin[i];
 		} else if (shdr_begin[i].sh_type == SHT_STRTAB && ft_strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
@@ -334,7 +351,7 @@ int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 		}
 	}
 	if (!symboltable_sectionheader) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (0);
 	}
 	Elf64_Sym	*symbols = (Elf64_Sym *)(file + (symboltable_sectionheader->sh_offset));

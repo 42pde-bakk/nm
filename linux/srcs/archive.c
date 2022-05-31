@@ -2,44 +2,34 @@
 // Created by Peer De bakker on 5/15/22.
 //
 
-#include <elf.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <ar.h>
 #include "nm.h"
 #include <string.h>
 #include <unistd.h>
-#include "ft_printf.h"
 #include "libft.h"
 
-void	actual_print(const char *str) {
+static void	print_filename(const char *str) {
 	size_t i = 0;
 
 	while (str[i] && str[i] != ' ' && str[i] != '/') {
 		i++;
 	}
-	write(STDOUT_FILENO, "\n", sizeof(char));
-	write(STDOUT_FILENO, str, i * sizeof(char));
-	ft_putstr_fd(":\n", STDOUT_FILENO);
+	char* sub = ft_substr(str, 0, i);
+	printf("\n%s:\n", sub);
+	free(sub);
 }
 
-void	print_filename(const char *name, const char* symbol_table) {
+static void	lookup_filename(const char *name, const char* symbol_table, const char* file_end) {
 	if (!symbol_table || name[0] != '/') {
-		actual_print(name);
+		print_filename(name);
 	} else {
 		int size = ft_atoi(name + 1);
-		actual_print(symbol_table + size);
+		if (symbol_table + size < file_end) {
+			print_filename(symbol_table + size);
+		}
 	}
-}
-
-void	putstr_nlen(const char* str, const size_t maxlen) {
-	size_t len = strlen(str);
-
-	if (maxlen < len) {
-		len = maxlen;
-	}
-	ssize_t ret = write(STDOUT_FILENO, str, len);
-	(void)ret;
 }
 
 void	print_arhdr(struct ar_hdr *arHdr) {
@@ -60,16 +50,19 @@ int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
 	while ((char *)arHdr < file_end) {
 		char	*ptr = (char *)arHdr + sizeof(struct ar_hdr);
 		int		size = ft_atoi(arHdr->ar_size);
+		if (ptr >= file_end) {
+			dprintf(STDERR_FILENO, "Error. Bad file\n");
+			return (EXIT_FAILURE);
+		}
 		e_type class = parse_magic_nb(ptr, size);
 
 		if (arHdr->ar_name[0] == '/' && arHdr->ar_name[1] == '/') {
 			// symbol table
 			table = ptr;
-			ft_dprintf(2, "fakka met je table\n");
 		}
 		else if (class == ELF32 || class == ELF64) {
 			// print filename
-			print_filename(arHdr->ar_name, table);
+			lookup_filename(arHdr->ar_name, table, file_end);
 			if (class == ELF32) {
 				handle_elf32(ptr, size, flags);
 			}

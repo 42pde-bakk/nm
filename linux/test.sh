@@ -3,6 +3,7 @@ OPTIONS=$"$2"
 
 exit_status=0
 
+# Good testfile: /usr/lib/llvm-11/lib/libLLVMAArch64CodeGen.a
 for filename in $FILES; do
   echo "Calling nm on" "'$filename'" "with options $OPTIONS"
   if [[ $OPTIONS ]]; then

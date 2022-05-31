@@ -8,7 +8,6 @@
 #include "nm.h"
 #include <stdlib.h>
 #include "libft.h"
-#include "ft_printf.h"
 
 static Elf32_Shdr	*shdr_begin = NULL;
 static Elf32_Shdr	*symboltable_sectionheader = NULL;
@@ -164,21 +163,21 @@ static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems) {
 			continue ;
 		}
 		if (symbol->value == 0)
-			ft_printf("%8s ", "");
+			printf("%8s ", "");
 		else
 #ifdef __i386__
 			printf("%08llx ", symbol->value);
 #else
-			ft_printf("%08lx ", symbol->value);
+			printf("%08lx ", symbol->value);
 #endif
-		ft_printf("%c ", symbol->letter);
-		ft_printf("%s", symbol->name);
-//		ft_printf("\t\tshndx=%u,", symbol.shndx);
-//		ft_printf(", bind=%#x ", symbol.bind);
-//		ft_printf(", type=%#x", symbol.type);
-//		ft_printf(", section index type= %#x", shdr_begin[symbol.shndx].sh_type);
-//		ft_printf(", sh_flags = %#lx", shdr_begin[symbol.shndx].sh_flags);
-		ft_printf("\n");
+		printf("%c ", symbol->letter);
+		printf("%s", symbol->name);
+//		printf("\t\tshndx=%u,", symbol.shndx);
+//		printf(", bind=%#x ", symbol.bind);
+//		printf(", type=%#x", symbol.type);
+//		printf(", section index type= %#x", shdr_begin[symbol.shndx].sh_type);
+//		printf(", sh_flags = %#lx", shdr_begin[symbol.shndx].sh_flags);
+		printf("\n");
 	}
 }
 
@@ -196,7 +195,7 @@ static void	print_symbols(Elf32_Sym *symbols, char* str, const unsigned int flag
 			if (type != STT_FILE && type != STT_SECTION) {
 				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
 				if (symbol_list[symbol_idx] == NULL) {
-					ft_dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
+					dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
 				}
 				symbol_idx++;
 			}
@@ -221,7 +220,7 @@ int handle_elf32(char *file, uint32_t offset, const unsigned int flags) {
 
 	(void)flags;
 	if (offset < sizeof(Elf32_Ehdr)) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (1);
 	}
 	hdr = (Elf32_Ehdr *)file;
@@ -229,19 +228,19 @@ int handle_elf32(char *file, uint32_t offset, const unsigned int flags) {
 	set_shouldReverse(get_endianess(), endianness);
 
 	if (hdr->e_shoff == 0) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (1);
 	}
 
 	shdr_begin = (Elf32_Shdr *)(file + hdr->e_shoff);
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
-		ft_dprintf(2, "ft_nm: Invalid version!\n");
+		dprintf(2, "ft_nm: Invalid version!\n");
 		return (1);
 	}
 
 	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
-	ft_dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
+	dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
 
 	for (Elf32_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
@@ -253,7 +252,7 @@ int handle_elf32(char *file, uint32_t offset, const unsigned int flags) {
 		}
 	}
 	if (!symboltable_sectionheader) {
-		ft_dprintf(2, "ft_nm: No symbols\n");
+		dprintf(2, "ft_nm: No symbols\n");
 		return (0);
 	}
 	Elf32_Sym	*symbols = (Elf32_Sym *)(file + (symboltable_sectionheader->sh_offset));

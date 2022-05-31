@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "nm.h"
+#include "error_codes.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -267,96 +268,91 @@ static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems, const unsign
 	}
 }
 
-static void	print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flags) {
+static int print_symbols(Elf64_Sym *symbols, char* str, const unsigned int flags) {
 	size_t		entries_amount = symboltable_sectionheader->sh_size / symboltable_sectionheader->sh_entsize;
 	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
+	e_error		status = SUCCESS;
 
 	ft_memset(symbol_list, 0, entries_amount * sizeof(t_symbol));
 
 	for (size_t i = 0; i < entries_amount; i++) {
 		if (symbols[i].st_name != 0) {
-//			dprintf(2, "i = %zu, st_name: %u name: %s\n", i, symbols[i].st_name, (char *)(str + symbols[i].st_name));
 			uint8_t type = ELF64_ST_TYPE(symbols[i].st_info);
 			if (type != STT_FILE && type != STT_SECTION) {
 				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
 				if (symbol_list[symbol_idx] == NULL) {
-					dprintf(2, "Error. Not enough space to malloc for t_symbol\n");
+					status = NO_MEMORY;
 				}
 				symbol_idx++;
 			}
 		}
 	}
-	if (!(flags & FLAG_r)) {
-		quickSort(symbol_list, 0, (idx_t) (symbol_idx - 1), flags);
+	if (status == SUCCESS) {
+		if (!(flags & FLAG_r)) {
+			quickSort(symbol_list, 0, (idx_t) (symbol_idx - 1), flags);
+		}
+		output_symbols(symbol_list, symbol_idx, flags);
 	}
-	output_symbols(symbol_list, symbol_idx, flags);
 
 	for (size_t i = 0; i < symbol_idx; i++) {
 		free(symbol_list[i]);
 		symbol_list[i] = NULL;
 	}
+	return (status);
 }
 
 int handle_elf64(char *file, uint32_t filesize, const unsigned int flags) {
 	Elf64_Ehdr	*hdr;
 	char		*str;
-	char*		file_end = file + filesize;
+	char		*file_end = file + filesize;
 
 	reset_globals();
-
 	if (filesize < sizeof(Elf64_Ehdr)) {
-		dprintf(STDERR_FILENO, "ft_nm: No symbols\n");
-		return (EXIT_FAILURE);
+		return (NO_SYMBOLS);
 	}
 	hdr = (Elf64_Ehdr *)file;
 	uint8_t	endianness = check_endian(hdr->e_ident[EI_DATA]);
 	if (set_shouldReverse(get_endianess(), endianness)) {
-		return (fatal_error("Not handling differing endianness. Sorry not sorry"));
+		return (DIFFERENT_ENDIAN);
 	}
 
 	if (hdr->e_shoff == 0) {
-		dprintf(STDERR_FILENO, "ft_nm: No symbols\n");
-		return (EXIT_FAILURE);
+		return (NO_SYMBOLS);
 	}
 
 	shdr_begin = (Elf64_Shdr *)(file + hdr->e_shoff);
-	if ((char*)shdr_begin >= file_end) {
-		return (fatal_error("Invalid file (shdr_begin outside of file)"));
+	if ((char*)shdr_begin >= file_end || hdr->e_shnum == 0) {
+		return (INVALID_FILE);
 	}
 
 	if (hdr->e_version == 0 || hdr->e_ident[EI_VERSION] != EV_CURRENT) {
-		return (fatal_error( "ft_nm: Invalid version!"));
+		return (INVALID_VERSION);
 	}
 
 	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
-//	dprintf(2, "sectionNames_stringTable at %p\n", (void *)sectionNames_stringTable);
 
 	for (Elf64_Half i = 0; i < hdr->e_shnum; i++) {
 		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
 		if (sectionName >= file_end) {
-			return (fatal_error("Bad file (sectionName outside of file)"));
+			return (INVALID_FILE);
 		}
-//		dprintf(2, "sectionName: %s\n", sectionName);
 		if (shdr_begin[i].sh_type == SHT_SYMTAB && ft_strncmp(sectionName, ".symtab", sizeof(".symtab")) == 0) {
 			symboltable_sectionheader = &shdr_begin[i];
 		} else if (shdr_begin[i].sh_type == SHT_STRTAB && ft_strncmp(sectionName, ".strtab", sizeof(".strtab")) == 0) {
 			stringtable_sectionheader = &shdr_begin[i];
-//			dprintf(2, "stringtable at %p, sh_offset = %llu\n", (void *)stringtable_sectionheader, shdr_begin[i].sh_offset);
 		}
 	}
 	if (!symboltable_sectionheader) {
-		return (fatal_error("ft_nm: No symbols"));
+		return (NO_SYMBOLS);
 	}
 	Elf64_Sym	*symbols = (Elf64_Sym *)(file + (symboltable_sectionheader->sh_offset));
 	if ((char *)symbols >= file_end) {
-		return (fatal_error("Bad file (symbols outside of file)"));
+		return (INVALID_FILE);
 	}
 	str = (char *)(file + (stringtable_sectionheader->sh_offset));
 	if (str >= file_end) {
-		return (fatal_error("Bad file (str outside of file)"));
+		return (INVALID_FILE);
 	}
-	print_symbols(symbols, str, flags);
-
-	return (EXIT_SUCCESS);
+	return (print_symbols(symbols, str, flags));
 }

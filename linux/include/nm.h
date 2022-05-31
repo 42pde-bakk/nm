@@ -4,7 +4,8 @@
 
 #ifndef NM_NM_H
 #define NM_NM_H
-#define DEFAULT_PATH "ft_nm"
+#define DEFAULT_PATH "a.out"
+#define PROGRAM_NAME "ft_nm"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -82,6 +83,9 @@ void quickSort(t_symbol *symbols[], idx_t low, idx_t high, unsigned int flags);
 /*
  * srcs/utils.c
  */
-int fatal_error(const char* error_msg);
+#include "error_codes.h"
+int	print_usage(unsigned int flags);
+int	print_version();
+void	print_error(e_error errorcode, const char* file_name);
 
 #endif //NM_NM_H

@@ -12,7 +12,6 @@
 #include <string.h>
 #include <elf.h>
 #include <ar.h>
-#include <string.h>
 #include "printf.h"
 
 static char* g_filename = NULL;
@@ -30,18 +29,19 @@ int parse_magic_nb(char *file, const size_t filesize) {
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
 		if (file[EI_CLASS] == ELFCLASS32) {
-//			dprintf(2, "ELF32\n");
+			dprintf(2, "ELF32\n");
 			return (ELF32); // ELF32
 		}
 		else if (file[EI_CLASS] == ELFCLASS64) {
-//			dprintf(2, "ELF64\n");
+			dprintf(2, "ELF64\n");
 			return (ELF64); // ELF64
 		}
 	}
 	else if (strncmp(file, ARMAG, SARMAG) == 0) {
-//		dprintf(2, "Archive\n");
+		dprintf(2, "ARCHIVE\n");
 		return (ARCHIVE); // Archive
 	}
+	dprintf(2, "INVALID\n");
 	return (INVALID); // INVALID
 }
 
@@ -49,25 +49,6 @@ int	handle_invalid(const char* file, const uint32_t size) {
 	(void)file; (void)size;
 	dprintf(2, "ft_nm: %s: file format not recognized\n", g_filename);
 	return (1);
-}
-
-int	print_usage(unsigned int flags) {
-	dprintf(2, "List symbols in [file(s)] (%s by default).\n", DEFAULT_PATH);
-	dprintf(2, "The options are:\n");
-	dprintf(2, "\t-a\t\tDisplay debugger-only symbols\n");
-	dprintf(2, "\t-g\t\tDisplay only external symbols\n");
-	dprintf(2, "\t-u\t\tDisplay only undefined symbols\n");
-	dprintf(2, "\t-r\t\tReverse the sense of the sort\n");
-	dprintf(2, "\t-p\t\tDo not sort the symbols\n");
-	dprintf(2, "\t-h\t\tDisplay this information\n");
-	dprintf(2, "\t-V\t\tDisplay this program's version number\n\n");
-	return !(flags & FLAG_h);
-}
-
-static int print_version() {
-	dprintf(2, "Peer nm %d\n", NM_VERSION);
-	dprintf(2, "\t%s\n", GITHUB_LINK);
-	return (EXIT_SUCCESS);
 }
 
 unsigned int count_files(int argc, char** argv) {
@@ -105,19 +86,15 @@ int	parse_file(const char* filename, unsigned int flags, bool has_multiple_files
 		return (error("MAP_FAILED"));
 	}
 
-	uint32_t magic_nb = *(uint32_t *)file;
-	dprintf(2, "magic_nb: %x\n", magic_nb);
 	e_type type = parse_magic_nb(file, buf.st_size);
 	if (type != INVALID && has_multiple_files) {
 		printf("\n%s:\n", filename);
 	}
-	handleFuncs[type](file, buf.st_size, flags);
+	int status = handleFuncs[type](file, buf.st_size, flags);
 
-	const int munmap_ret = munmap(file, buf.st_size);
-	const int close_ret = close(fd);
-	if (munmap_ret || close_ret)
-		return (EXIT_FAILURE);
-	return (EXIT_SUCCESS);
+	munmap(file, buf.st_size);
+	close(fd);
+	return (status);
 }
 
 int main(int argc, char** argv) {
@@ -140,7 +117,11 @@ int main(int argc, char** argv) {
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') {
 			dprintf(2, "i = %d, argv[i] = %s\n, lets parse this file\n", i, argv[i]);
-			ret |= parse_file(argv[i], flags, multiple_files);
+			int status = parse_file(argv[i], flags, multiple_files);
+			if (status) {
+				print_error(status, argv[i]);
+			}
+			ret |= status;
 		}
 	}
 	return (ret);

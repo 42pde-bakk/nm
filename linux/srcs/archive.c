@@ -10,36 +10,26 @@
 #include <unistd.h>
 #include "libft.h"
 
-static void	print_filename(const char *str) {
+static char	*get_filename(const char *str) {
 	size_t i = 0;
 
 	while (str[i] && str[i] != ' ' && str[i] != '/') {
 		i++;
 	}
-	char* sub = ft_substr(str, 0, i);
-	printf("\n%s:\n", sub);
-	free(sub);
+	return (ft_substr(str, 0, i));
 }
 
-static void	lookup_filename(const char *name, const char* symbol_table, const char* file_end) {
+static char *lookup_filename(const char *name, const char* symbol_table, const char* file_end) {
+	char	*filename = NULL;
 	if (!symbol_table || name[0] != '/') {
-		print_filename(name);
+		filename = get_filename(name);
 	} else {
 		int size = ft_atoi(name + 1);
 		if (symbol_table + size < file_end) {
-			print_filename(symbol_table + size);
+			filename = get_filename(symbol_table + size);
 		}
 	}
-}
-
-void	print_arhdr(struct ar_hdr *arHdr) {
-	dprintf(2, "ar_name: %s\n", arHdr->ar_name);
-	dprintf(2, "ar_date: %s\n", arHdr->ar_date);
-	dprintf(2, "ar_uid: %s\n", arHdr->ar_uid);
-	dprintf(2, "ar_gid: %s\n", arHdr->ar_gid);
-	dprintf(2, "ar_mode: %s\n", arHdr->ar_mode);
-	dprintf(2, "ar_size: %s\n", arHdr->ar_size);
-	dprintf(2, "ar_fmag: %s\n", arHdr->ar_fmag);
+	return (filename);
 }
 
 int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
@@ -62,13 +52,19 @@ int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
 		}
 		else if (class == ELF32 || class == ELF64) {
 			// print filename
-			lookup_filename(arHdr->ar_name, table, file_end);
+			int		return_status;
+			char	*filename = lookup_filename(arHdr->ar_name, table, file_end);
+			printf("\n%s:\n", filename);
 			if (class == ELF32) {
-				handle_elf32(ptr, size, flags);
+				return_status = handle_elf32(ptr, size, flags);
 			}
 			else {
-				handle_elf64(ptr, size, flags);
+				return_status = handle_elf64(ptr, size, flags);
 			}
+			if (return_status) {
+				print_error(return_status, filename);
+			}
+			free(filename);
 		}
 		arHdr = (struct ar_hdr *)(ptr + size);
 	}

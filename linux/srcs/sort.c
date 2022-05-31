@@ -4,6 +4,7 @@
 
 #include "nm.h"
 #include <string.h>
+typedef int idx_t;
 
 void	swap(t_symbol *symbols[], const idx_t i, const idx_t j) {
 	t_symbol	*tmp = symbols[i];
@@ -16,7 +17,7 @@ bool	shouldSwap(const t_symbol *symbol, const t_symbol *pivot, unsigned int flag
 	const int cmp_ret = strcmp(symbol->name, pivot->name);
 	const bool ret = (cmp_ret < 0 || (cmp_ret == 0 && symbol->value < pivot->value));
 
-	if (flags & FLAG_p) {
+	if (flags & FLAG_REVERSE_SORT) {
 		return (!ret);
 	}
 	return (ret);
@@ -44,4 +45,11 @@ void quickSort(t_symbol *symbols[], idx_t low, idx_t high, const unsigned int fl
 		quickSort(symbols, low, partitionIndex - 1, flags);
 		quickSort(symbols, partitionIndex + 1, high, flags);
 	}
+}
+
+void	sort_symbols(t_symbol *symbols[], const size_t symbol_amount, const unsigned int flags) {
+	if (flags & FLAG_NO_SORT) {
+		return ;
+	}
+	quickSort(symbols, 0, (idx_t)(symbol_amount - 1), flags);
 }

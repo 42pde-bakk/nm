@@ -40,19 +40,19 @@ typedef struct	s_symbol {
 	void			*symbol_ptr;
 }				t_symbol;
 
-#define FLAG_a 0b0010000 // Debug symbols
-#define FLAG_g 0b0001000 // Extern symbols only
-#define FLAG_u 0b0000100 // Undefined symbols only
-#define FLAG_r 0b0000010 // No sort
-#define FLAG_p 0b0000001 // reverse sort
-#define FLAG_h 0b1000000 // Display help
-#define FLAG_V 0b0100000 // Display version number
+#define FLAG_DEBUG_SYMS 0b0010000
+#define FLAG_EXTERN_ONLY 0b0001000
+#define FLAG_UNDEFINED_ONLY 0b0000100 // Undefined symbols only
+#define FLAG_REVERSE_SORT 0b0000010 // No sort
+#define FLAG_NO_SORT 0b0000001 // reverse sort
+#define FLAG_HELP 0b1000000 // Display help
+#define FLAG_VERSION 0b0100000 // Display version number
 #define NM_VERSION 69
 #define GITHUB_LINK "https://github.com/42pde-bakk/nm"
 
 int parse_magic_nb(char *file, size_t filesize);
 typedef int (*handle_func)();
-int handle_elf32(char *file, uint32_t offset, unsigned int flags);
+int handle_elf32(char *file, uint32_t filesize, unsigned int flags);
 int handle_archive(char *file, uint32_t offset, unsigned int flags);
 int handle_elf64(char *file, uint32_t filesize, unsigned int flags);
 
@@ -62,6 +62,10 @@ int handle_elf64(char *file, uint32_t filesize, unsigned int flags);
 
 unsigned int parse_options(int argc, char **argv, int *error);
 
+/*
+ * srcs/symbols.c
+ */
+void	output_symbol(const t_symbol *symbol, unsigned int flags);
 /*
  * srcs/endian.c
  */
@@ -77,8 +81,8 @@ bool set_shouldReverse(int myEndian, int theirEndian);
 /*
  * srcs/sort.c
  */
-typedef int idx_t;
-void quickSort(t_symbol *symbols[], idx_t low, idx_t high, unsigned int flags);
+
+void	sort_symbols(t_symbol *symbols[], size_t symbol_amount, unsigned int flags);
 
 /*
  * srcs/utils.c

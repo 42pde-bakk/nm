@@ -105,9 +105,9 @@ int main(int argc, char** argv) {
 	int					ret = 0;
 
 	dprintf(2, "file_amount = %u\n", file_amount);
-	if (flags & FLAG_h || parse_error) {
+	if (flags & FLAG_HELP || parse_error) {
 		return (print_usage(flags));
-	} else if (flags & FLAG_V) {
+	} else if (flags & FLAG_VERSION) {
 		return (print_version());
 	}
 
@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
 	}
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') {
-			dprintf(2, "i = %d, argv[i] = %s\n, lets parse this file\n", i, argv[i]);
 			int status = parse_file(argv[i], flags, multiple_files);
 			if (status) {
 				print_error(status, argv[i]);

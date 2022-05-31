@@ -17,7 +17,7 @@ int	print_usage(const unsigned int flags) {
 	dprintf(STDERR_FILENO, "\t-p\t\tDo not sort the symbols\n");
 	dprintf(STDERR_FILENO, "\t-h\t\tDisplay this information\n");
 	dprintf(STDERR_FILENO, "\t-V\t\tDisplay this program's version number\n\n");
-	return !(flags & FLAG_h);
+	return !(flags & FLAG_HELP);
 }
 
 int print_version() {
@@ -35,7 +35,6 @@ void	print_error(const e_error errorcode, const char* file_name) {
 			[INVALID_FILE] = "file format not recognized",
 			[NO_MEMORY] = "out of memory"
 	};
-	dprintf(2, "errorcode = %d\n", errorcode);
 	if (errorcode) {
 		dprintf(STDERR_FILENO, "%s: %s: %s\n", PROGRAM_NAME, file_name, error_strings[errorcode]);
 	}

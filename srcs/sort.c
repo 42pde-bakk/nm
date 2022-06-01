@@ -15,12 +15,12 @@ void	swap(t_symbol *symbols[], const idx_t i, const idx_t j) {
 
 bool	shouldSwap(const t_symbol *symbol, const t_symbol *pivot, unsigned int flags) {
 	const int cmp_ret = strcmp(symbol->name, pivot->name);
-	const bool ret = (cmp_ret < 0 || (cmp_ret == 0 && symbol->value < pivot->value));
 
 	if (flags & FLAG_REVERSE_SORT) {
-		return (!ret);
+		return (cmp_ret > 0 || (cmp_ret == 0 && symbol->value < pivot->value));
+	} else {
+		return (cmp_ret < 0 || (cmp_ret == 0 && symbol->value < pivot->value));
 	}
-	return (ret);
 }
 
 idx_t	partition (t_symbol *symbols[], const idx_t low, const idx_t high, const unsigned int flags) {

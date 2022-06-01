@@ -8,21 +8,11 @@
 
 static const t_section_to_letter stt[] = {
 		{".bss", 'b'},
-//		{"*DEBUG*", 'N'},
-//		{".debug", 'N'},
-//		{".drectve", 'i'},
-//		{".edata", 'e'},
-//		{".fini", 't'},
-//		{".idata", 'i'},
 		{".init", 't'},
-//		{".pdata", 'p'},
 		{".rdata", 'r'},
 		{".rodata", 'r'},
 		{".sbss", 's'},
 		{".scommon", 'c'},
-//		{".sdata", 'g'},
-//		{"vars", 'd'},
-//		{"zerovars", 'b'},
 		{NULL, '?'}
 };
 

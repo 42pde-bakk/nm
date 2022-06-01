@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "libft.h"
+#include "ft_printf.h"
 
 static char	*get_filename(const char *str) {
 	size_t i = 0;
@@ -16,6 +17,7 @@ static char	*get_filename(const char *str) {
 	while (str[i] && str[i] != ' ' && str[i] != '/') {
 		i++;
 	}
+	ft_printf("whatsup\n");
 	return (ft_substr(str, 0, i));
 }
 

@@ -1,3 +1,0 @@
-[submodule "linux/libftprintf"]
-	path = linux/libftprintf
-	url = https://github.com/42pde-bakk/ft_printf

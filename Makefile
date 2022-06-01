@@ -1,5 +1,5 @@
 NAME = ft_nm
-INCLUDE = -Iinclude -Ilibftprintf/include -Ilibftprintf/libft/include
+INCLUDE = -Iinclude -Ilibft/include
 HEADER = include/nm.h
 
 SRC_DIR = ./srcs
@@ -10,7 +10,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJECTSS = $(SRCS:.c=.o)
 OBJS = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(OBJECTSS))
 
-LIBS = libftprintf.a
+LIBS = libft.a
 
 # COLORS
 PINK = \x1b[35;01m
@@ -47,10 +47,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	/bin/rm -f $(OBJS)
 	@/bin/rm -f *.o *~ *.gch
-	$(MAKE) $@ -C libftprintf
+	$(MAKE) $@ -C libft
 
 fclean: clean
 	/bin/rm -f $(NAME)
-	$(MAKE) $@ -C libftprintf
+	$(MAKE) $@ -C libft
 
 re: fclean all

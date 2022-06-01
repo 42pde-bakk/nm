@@ -21,14 +21,7 @@ typedef enum {
 	BAD_ENDIAN = 0,
 	LITTLE = 1,
 	BIG = 2,
-	MIX = 3
 }	e_endian;
-
-typedef struct	s_section {
-	char* name;
-	uint32_t type;
-	uint32_t flag;
-}				t_section;
 
 typedef struct	s_symbol {
 	const char		*name;

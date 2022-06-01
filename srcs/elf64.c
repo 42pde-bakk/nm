@@ -9,6 +9,8 @@
 #include "error_codes.h"
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "libft.h"
 
 static Elf64_Shdr	*shdr_begin = NULL;
@@ -22,7 +24,7 @@ static void	reset_globals() {
 	stringtable_sectionheader = NULL;
 	sectionNames_stringTable = NULL;
 }
-
+#include <stdio.h>
 /*
  * https://stackoverflow.com/questions/15225346/how-to-display-the-symbols-type-like-the-nm-command
  */
@@ -59,12 +61,24 @@ static char            print_type(Elf64_Sym sym)
 	}
 
 	if (st_shndx != SHN_ABS) {
-		if ((c = get_letter_from_sectionname(name))) {
+		c = get_letter_from_sectionname(name);
+		if (c == '?') {
 			if (st_type == STT_FUNC || sh_flags & SHF_EXECINSTR) {
 				c = 't';
 			}
+			else if (ft_strncmp(".rodata", name, 7) == 0) {
+				c = 'n';
+			}
 			else if (sh_type == SHT_PROGBITS || sh_type == SHT_HASH || sh_type == SHT_NOTE || sh_type == SHT_INIT_ARRAY || sh_type == SHT_FINI_ARRAY || sh_type == SHT_PREINIT_ARRAY || sh_type == SHT_GNU_LIBLIST || sh_type == SHT_GNU_HASH || sh_type == SHT_DYNAMIC) {
 				if (!(sh_flags & SHF_WRITE)) { // read-only
+					/*
+					 * In file '/usr/lib/x86_64-linux-gnu/libpthread.a'
+					 * I can't seem to get
+					 * 	__evoke_link_warning_pthread_attr_{get,set}stackaddr
+					 * to have the 'n' symbol instead of the 'r'.
+					 * But the nm man specifies for n: "The symbol is in the read-only data section."
+					 * But the section is not ".rodata" or ".rodata1", so I dont know how I should tackle this.
+					 */
 					c = 'r';
 				} else if (sh_flags & SHF_COMPRESSED) {
 					c = 'g';
@@ -78,7 +92,8 @@ static char            print_type(Elf64_Sym sym)
 				} else {
 					c = 'b';
 				}
-			} else if (symbol_header.sh_offset && !(sh_flags & SHF_WRITE))
+			}
+			else if (symbol_header.sh_offset && !(sh_flags & SHF_WRITE))
 				c = 'n';
 		}
 	}

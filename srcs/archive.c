@@ -9,7 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "libft.h"
-#include "ft_printf.h"
 
 static char	*get_filename(const char *str) {
 	size_t i = 0;
@@ -17,7 +16,6 @@ static char	*get_filename(const char *str) {
 	while (str[i] && str[i] != ' ' && str[i] != '/') {
 		i++;
 	}
-	ft_printf("whatsup\n");
 	return (ft_substr(str, 0, i));
 }
 
@@ -56,7 +54,6 @@ int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
 			// print filename
 			int		return_status;
 			char	*filename = lookup_filename(arHdr->ar_name, table, file_end);
-			printf("\n%s:\n", filename);
 			if (class == ELF32) {
 				return_status = handle_elf32(ptr, size, flags);
 			}
@@ -70,5 +67,5 @@ int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
 		}
 		arHdr = (struct ar_hdr *)(ptr + size);
 	}
-	return (0);
+	return (EXIT_SUCCESS);
 }

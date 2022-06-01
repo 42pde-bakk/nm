@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.7)
+project(ft_printf_test C)
+set(CMAKE_C_STANDARD 11)
+
+# Add c files of project root directory as source file
+file(GLOB STRING_SRC_FILES "string/*.c")
+file(GLOB CHAR_SRC_FILES "char/*.c")
+file(GLOB DIGIT_SRC_FILES "digit/*.c")
+file(GLOB FLOAT_SRC_FILES "float/*.c")
+file(GLOB HEXADECIMAL_SRC_FILES "hexadecimal/*.c")
+file(GLOB OCTAL_SRC_FILES "octal/*.c")
+file(GLOB UNSIGNED_SRC_FILES "unsigned/*.c")
+
+include_directories(../include)
+add_executable(string_test ${STRING_SRC_FILES})
+add_executable(char_tests ${CHAR_SRC_FILES})
+add_executable(digit_tests ${DIGIT_SRC_FILES})
+add_executable(float_tests ${FLOAT_SRC_FILES})
+add_executable(hexadecimal_tests ${HEXADECIMAL_SRC_FILES})
+add_executable(octal_tests ${OCTAL_SRC_FILES})
+add_executable(unsigned_tests ${UNSIGNED_SRC_FILES})

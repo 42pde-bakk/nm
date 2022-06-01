@@ -1,5 +1,5 @@
 FILES=$@
-OPTIONS="-r"
+OPTIONS=""
 
 exit_status=0
 

@@ -54,6 +54,8 @@ int handle_archive(char *file, uint32_t filesize, const unsigned int flags) {
 			// print filename
 			int		return_status;
 			char	*filename = lookup_filename(arHdr->ar_name, table, file_end);
+
+			printf("\n%s:\n", filename);
 			if (class == ELF32) {
 				return_status = handle_elf32(ptr, size, flags);
 			}

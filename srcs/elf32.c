@@ -87,12 +87,12 @@ static char            print_type(Elf32_Sym sym)
 	return c;
 }
 
-static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *symstr) {
+static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *stringTable_symbols) {
 	t_symbol *symbol = malloc(sizeof(t_symbol));
 
 	if (symbol == NULL)
 		return (NULL);
-	symbol->name = symstr + sym->st_name;
+	symbol->name = stringTable_symbols + sym->st_name;
 	symbol->type = ELF32_ST_TYPE(sym->st_info);
 	symbol->bind = ELF32_ST_BIND(sym->st_info);
 	symbol->shndx = sym->st_info;
@@ -109,7 +109,7 @@ static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems, const unsign
 	}
 }
 
-static int print_symbols(Elf32_Sym *symbols, char* str, const unsigned int flags) {
+static int print_symbols(Elf32_Sym *symbols, const char *stringTable_symbols, const unsigned int flags) {
 	size_t		entries_amount = symboltable_sectionheader->sh_size / symboltable_sectionheader->sh_entsize;
 	t_symbol*	symbol_list[entries_amount * sizeof(t_symbol)];
 	size_t		symbol_idx = 0;
@@ -121,7 +121,7 @@ static int print_symbols(Elf32_Sym *symbols, char* str, const unsigned int flags
 		if (symbols[i].st_name != 0) {
 			uint8_t type = ELF32_ST_TYPE(symbols[i].st_info);
 			if (type != STT_FILE && type != STT_SECTION) {
-				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], str);
+				symbol_list[symbol_idx] = create_tsymbol(&symbols[i], stringTable_symbols);
 				if (symbol_list[symbol_idx] == NULL) {
 					status = NO_MEMORY;
 				}
@@ -142,7 +142,7 @@ static int print_symbols(Elf32_Sym *symbols, char* str, const unsigned int flags
 
 int handle_elf32(char *file, uint32_t filesize, const unsigned int flags) {
 	Elf32_Ehdr	*hdr;
-	char		*str;
+	char		*stringTable_symbols;
 	char		*file_end = file + filesize;
 
 	reset_globals();
@@ -171,7 +171,7 @@ int handle_elf32(char *file, uint32_t filesize, const unsigned int flags) {
 	sectionNames_stringTable = (char *)(file + shdr_begin[hdr->e_shstrndx].sh_offset);
 
 	for (Elf32_Half i = 0; i < hdr->e_shnum; i++) {
-		const char* sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
+		const char *sectionName = (const char *)(sectionNames_stringTable + shdr_begin[i].sh_name);
 		if (sectionName >= file_end) {
 			return (INVALID_FILE);
 		}
@@ -188,9 +188,9 @@ int handle_elf32(char *file, uint32_t filesize, const unsigned int flags) {
 	if ((char *)symbols >= file_end) {
 		return (INVALID_FILE);
 	}
-	str = (char *)(file + (stringtable_sectionheader->sh_offset));
-	if (str >= file_end) {
+	stringTable_symbols = (char *)(file + (stringtable_sectionheader->sh_offset));
+	if (stringTable_symbols >= file_end) {
 		return (INVALID_FILE);
 	}
-	return (print_symbols(symbols, str, flags));
+	return (print_symbols(symbols, stringTable_symbols, flags));
 }

@@ -47,6 +47,9 @@ static char            print_type(Elf64_Sym sym)
 		return 'U';
 	}
 
+	if (st_type == STT_GNU_IFUNC) {
+		return ('i');
+	}
 	if (st_bind == STB_WEAK) {
 		return (st_type == STT_OBJECT) ? 'V' : 'W';
 	}

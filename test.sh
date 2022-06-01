@@ -1,15 +1,18 @@
-FILES="$1"
-OPTIONS=$"$2"
+FILES=$@
+OPTIONS="-r"
 
 exit_status=0
 
+echo "Files: $FILES"
+
 # Good testfile: /usr/lib/llvm-11/lib/libLLVMAArch64CodeGen.a
 for filename in $FILES; do
-  echo "Calling nm on" "'$filename'" "with options $OPTIONS"
   if [[ $OPTIONS ]]; then
+    echo "Calling nm on" "'$filename'" "with options $OPTIONS"
     ./ft_nm "$OPTIONS" "$filename" > /tmp/diff1.txt 2> /dev/null
     nm "$OPTIONS" "$filename" > /tmp/diff2.txt 2> /dev/null
   else
+    echo "Calling nm on" "'$filename'"
     ./ft_nm "$filename" > /tmp/diff1.txt 2> /dev/null
     nm "$filename" > /tmp/diff2.txt 2> /dev/null
   fi

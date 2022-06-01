@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfiles/Debian64.Dockerfile
     volumes:
-    - ./linux:/code
+    - .:/code
     tty: true
     container_name: nm64_pde-bakk
 
@@ -16,6 +16,6 @@ services:
       context: .
       dockerfile: Dockerfiles/Debian32.Dockerfile
     volumes:
-      - ./linux:/code
+      - .:/code
     tty: true
     container_name: nm32_pde-bakk

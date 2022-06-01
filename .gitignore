@@ -132,3 +132,4 @@ diff*.txt
 .idea/
 ft_nm
 diff*.txt
+build/

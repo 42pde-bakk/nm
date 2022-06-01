@@ -3,7 +3,6 @@
 //
 
 #include <elf.h>
-#include <stdio.h>
 #include <stdint.h>
 #include "nm.h"
 #include <stdlib.h>

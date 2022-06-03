@@ -5,7 +5,6 @@
 #include "libft.h"
 #include <stddef.h>
 #include "sections.h"
-#include <stdio.h>
 
 static const t_section_to_letter stt[] = {
 		{".bss", 'b'},

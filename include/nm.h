@@ -26,12 +26,8 @@ typedef enum {
 
 typedef struct	s_symbol {
 	const char		*name;
-	uint8_t			type;
-	uint8_t			bind;
-	uint16_t		shndx;
 	uint64_t		value;
 	unsigned char	letter;
-	void			*symbol_ptr;
 	const char		*sectionname;
 }				t_symbol;
 

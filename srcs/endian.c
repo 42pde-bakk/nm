@@ -4,7 +4,6 @@
 
 #include <elf.h>
 #include "nm.h"
-#include <stdio.h>
 #include <stdbool.h>
 
 bool	g_shouldReverse;

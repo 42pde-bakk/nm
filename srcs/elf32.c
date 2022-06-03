@@ -30,7 +30,7 @@ static void	reset_globals(const char* file, const uint32_t filesize) {
  */
 static char            print_type(Elf32_Sym sym)
 {
-	char  c = 0;
+	char  c;
 	Elf64_Section st_shndx = sym.st_shndx;
 	uint8_t		st_type = ELF64_ST_TYPE(sym.st_info);
 	uint8_t		st_bind = ELF64_ST_BIND(sym.st_info);
@@ -83,7 +83,7 @@ static char            print_type(Elf32_Sym sym)
 					 * 	__evoke_link_warning_pthread_attr_{get,set}stackaddr
 					 * to have the 'n' symbol instead of the 'r'.
 					 * But the nm man specifies for n: "The symbol is in the read-only data section."
-					 * But the section is not ".rodata" or ".rodata1", so I dont know how I should tackle this.
+					 * But the section is not ".rodata" or ".rodata1", so I don't know how I should tackle this.
 					 */
 					c = 'r';
 				} else if (sh_flags & SHF_COMPRESSED) {
@@ -116,12 +116,8 @@ static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *stringTable_sy
 	if (symbol == NULL)
 		return (NULL);
 	symbol->name = stringTable_symbols + sym->st_name;
-	symbol->type = ELF32_ST_TYPE(sym->st_info);
-	symbol->bind = ELF32_ST_BIND(sym->st_info);
-	symbol->shndx = sym->st_info;
 	symbol->value = sym->st_value;
 	symbol->letter = print_type(*sym);
-	symbol->symbol_ptr = (void *)sym;
 
 	return (symbol);
 }

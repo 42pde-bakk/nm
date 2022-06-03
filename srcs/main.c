@@ -29,19 +29,15 @@ int parse_magic_nb(char *file, const size_t filesize) {
 	if (strncmp(file, ELFMAG, SELFMAG) == 0) {
 		// Magic bytes for ELF files
 		if (file[EI_CLASS] == ELFCLASS32) {
-			dprintf(2, "ELF32\n");
 			return (ELF32); // ELF32
 		}
 		else if (file[EI_CLASS] == ELFCLASS64) {
-			dprintf(2, "ELF64\n");
 			return (ELF64); // ELF64
 		}
 	}
 	else if (strncmp(file, ARMAG, SARMAG) == 0) {
-		dprintf(2, "ARCHIVE\n");
 		return (ARCHIVE); // Archive
 	}
-	dprintf(2, "INVALID\n");
 	return (INVALID); // INVALID
 }
 
@@ -104,7 +100,6 @@ int main(int argc, char** argv) {
 	const bool			multiple_files = file_amount > 1;
 	int					ret = 0;
 
-	dprintf(2, "file_amount = %u\n", file_amount);
 	if (flags & FLAG_HELP || parse_error) {
 		return (print_usage(flags));
 	} else if (flags & FLAG_VERSION) {

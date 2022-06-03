@@ -2,7 +2,6 @@
 // Created by Peer De bakker on 5/21/22.
 //
 #include "nm.h"
-#include <stdio.h>
 
 unsigned int parse_options(int argc, char **argv, int *error) {
 	unsigned int flags = 0u;

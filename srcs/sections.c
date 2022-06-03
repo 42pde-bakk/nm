@@ -5,14 +5,17 @@
 #include "libft.h"
 #include <stddef.h>
 #include "sections.h"
+#include <stdio.h>
 
 static const t_section_to_letter stt[] = {
 		{".bss", 'b'},
+		{".init_array", 'd'},
 		{".init", 't'},
 		{".rdata", 'r'},
 		{".rodata", 'r'},
 		{".sbss", 's'},
 		{".scommon", 'c'},
+		{"vars", 'd'},
 		{NULL, '?'}
 };
 

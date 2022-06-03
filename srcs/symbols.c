@@ -5,7 +5,7 @@
 #include "nm.h"
 #include <stdio.h>
 
-void	output_symbol(const t_symbol *symbol, const unsigned int flags) {
+void output_symbol(const t_symbol *symbol, const unsigned int flags, const int value_padding) {
 	if (symbol->name == NULL) {
 		return ;
 	}
@@ -14,15 +14,19 @@ void	output_symbol(const t_symbol *symbol, const unsigned int flags) {
 		return ;
 	}
 	if (symbol->letter == 'U' || symbol->letter == 'w') {
-		printf("%18c %s\n", symbol->letter, symbol->name);
+		printf("%*c %s\n", value_padding + 2, symbol->letter, symbol->name);
 		return ;
 	}
 	if (flags & FLAG_UNDEFINED_ONLY) {
 		return ;
 	}
 #ifdef __i386__
-	printf("%016llx %c %s\n", symbol->value, symbol->letter, symbol->sectionName);
+	printf("%0*llx %c %s\n", value_padding, symbol->value, symbol->letter, symbol->name);
 #else
-	printf("%016lx %c %s\n", symbol->value, symbol->letter, symbol->name);
+	if (symbol->letter == 'h') {
+		printf("%0*lx %c %s %s\n", value_padding, symbol->value, symbol->letter, symbol->name, symbol->sectionname);
+		return ;
+	}
+	printf("%0*lx %c %s\n", value_padding, symbol->value, symbol->letter, symbol->name);
 #endif
 }

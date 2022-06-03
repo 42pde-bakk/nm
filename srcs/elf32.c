@@ -105,7 +105,7 @@ static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *stringTable_sy
 
 static void	output_symbols(t_symbol *symbols[], Elf32_Half n_elems, const unsigned int flags) {
 	for (Elf32_Half i = 0; i < n_elems; i++) {
-		output_symbol(symbols[i], flags);
+		output_symbol(symbols[i], flags, ELF32_VALUE_PADDING);
 	}
 }
 

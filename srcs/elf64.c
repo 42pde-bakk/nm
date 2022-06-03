@@ -28,7 +28,7 @@ static void	reset_globals() {
 /*
  * https://stackoverflow.com/questions/15225346/how-to-display-the-symbols-type-like-the-nm-command
  */
-static char            print_type(Elf64_Sym sym)
+static char            print_type(Elf64_Sym sym, t_symbol *symbol)
 {
 	char  c = 0;
 	Elf64_Section st_shndx = sym.st_shndx;
@@ -38,6 +38,7 @@ static char            print_type(Elf64_Sym sym)
 	Elf64_Word	sh_type = symbol_header.sh_type;
 	Elf64_Word	sh_flags = symbol_header.sh_flags;
 	const char* name = (const char *)(sectionNames_stringTable + symbol_header.sh_name);
+	symbol->sectionname = name;
 
 	if (st_shndx == SHN_COMMON) {
 		return 'C';
@@ -114,7 +115,7 @@ static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *stringTable_sy
 	symbol->bind = ELF64_ST_BIND(sym->st_info);
 	symbol->shndx = sym->st_info;
 	symbol->value = sym->st_value;
-	symbol->letter = print_type(*sym);
+	symbol->letter = print_type(*sym, symbol);
 	symbol->symbol_ptr = (void *)sym;
 
 	return (symbol);
@@ -122,7 +123,7 @@ static t_symbol	*create_tsymbol(const Elf64_Sym *sym, const char *stringTable_sy
 
 static void	output_symbols(t_symbol *symbols[], Elf64_Half n_elems, const unsigned int flags) {
 	for (Elf64_Half i = 0; i < n_elems; i++) {
-		output_symbol(symbols[i], flags);
+		output_symbol(symbols[i], flags, ELF64_VALUE_PADDING);
 	}
 }
 

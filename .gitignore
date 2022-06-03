@@ -130,6 +130,6 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 diff*.txt
 .idea/
-ft_nm
+ft_nm*
 diff*.txt
 build/

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "error_codes.h"
 
 typedef enum {
 	INVALID = 0,
@@ -62,7 +63,7 @@ unsigned int parse_options(int argc, char **argv, int *error);
 /*
  * srcs/symbols.c
  */
-void output_symbol(const t_symbol *symbol, const unsigned int flags, int value_padding);
+void output_symbol(const t_symbol *symbol, unsigned int flags, int value_padding);
 /*
  * srcs/endian.c
  */
@@ -84,9 +85,9 @@ void	sort_symbols(t_symbol *symbols[], size_t symbol_amount, unsigned int flags)
 /*
  * srcs/utils.c
  */
-#include "error_codes.h"
 int	print_usage(unsigned int flags);
 int	print_version();
 void	print_error(e_error errorcode, const char* file_name);
+bool	is_within_file(void* addr, void* file_start, uint32_t filesize);
 
 #endif //NM_NM_H

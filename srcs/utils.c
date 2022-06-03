@@ -39,3 +39,7 @@ void	print_error(const e_error errorcode, const char* file_name) {
 		dprintf(STDERR_FILENO, "%s: %s: %s\n", PROGRAM_NAME, file_name, error_strings[errorcode]);
 	}
 }
+
+bool	is_within_file(void* addr, void* file_start, uint32_t filesize) {
+	return (addr >= file_start && addr <= (file_start + filesize));
+}

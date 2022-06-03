@@ -13,28 +13,27 @@ static Elf32_Shdr	*shdr_begin = NULL;
 static Elf32_Shdr	*symboltable_sectionheader = NULL;
 static Elf32_Shdr	*stringtable_sectionheader = NULL;
 static char			*sectionNames_stringTable; // Section header string table
+static void			*g_file = NULL;
+static uint32_t		g_filesize = 0;
 
-static void	reset_globals() {
+static void	reset_globals(const char* file, const uint32_t filesize) {
 	shdr_begin = NULL;
 	symboltable_sectionheader = NULL;
 	stringtable_sectionheader = NULL;
 	sectionNames_stringTable = NULL;
+	g_file = (void *)file;
+	g_filesize = filesize;
 }
 
 /*
  * https://stackoverflow.com/questions/15225346/how-to-display-the-symbols-type-like-the-nm-command
  */
-static char            print_type(Elf32_Sym sym, t_symbol *symbol)
+static char            print_type(Elf32_Sym sym)
 {
 	char  c = 0;
-	Elf32_Section st_shndx = sym.st_shndx;
-	uint8_t		st_type = ELF32_ST_TYPE(sym.st_info);
-	uint8_t		st_bind = ELF32_ST_BIND(sym.st_info);
-	Elf32_Shdr	symbol_header = shdr_begin[st_shndx];
-	Elf32_Word	sh_type = symbol_header.sh_type;
-	Elf32_Word	sh_flags = symbol_header.sh_flags;
-	const char* name = (const char *)(sectionNames_stringTable + symbol_header.sh_name);
-	symbol->sectionname = name;
+	Elf64_Section st_shndx = sym.st_shndx;
+	uint8_t		st_type = ELF64_ST_TYPE(sym.st_info);
+	uint8_t		st_bind = ELF64_ST_BIND(sym.st_info);
 
 	if (st_shndx == SHN_COMMON) {
 		return 'C';
@@ -57,7 +56,17 @@ static char            print_type(Elf32_Sym sym, t_symbol *symbol)
 		return 'u';
 	}
 
-	if (st_shndx != SHN_ABS) {
+	if (st_shndx == SHN_ABS) {
+		c = 'a';
+	}
+	else {
+		if (is_within_file(&shdr_begin[st_shndx], g_file, g_filesize) == false) {
+			return ('?');
+		}
+		Elf32_Shdr	symbol_header = shdr_begin[st_shndx];
+		Elf32_Word	sh_type = symbol_header.sh_type;
+		Elf32_Word	sh_flags = symbol_header.sh_flags;
+		const char* name = (const char *)(sectionNames_stringTable + symbol_header.sh_name);
 		c = get_letter_from_sectionname(name);
 		if (c == '?') {
 			if (st_type == STT_FUNC || sh_flags & SHF_EXECINSTR) {
@@ -111,7 +120,7 @@ static t_symbol	*create_tsymbol(const Elf32_Sym *sym, const char *stringTable_sy
 	symbol->bind = ELF32_ST_BIND(sym->st_info);
 	symbol->shndx = sym->st_info;
 	symbol->value = sym->st_value;
-	symbol->letter = print_type(*sym, symbol);
+	symbol->letter = print_type(*sym);
 	symbol->symbol_ptr = (void *)sym;
 
 	return (symbol);
@@ -159,7 +168,7 @@ int handle_elf32(char *file, uint32_t filesize, const unsigned int flags) {
 	char		*stringTable_symbols;
 	char		*file_end = file + filesize;
 
-	reset_globals();
+	reset_globals(file, filesize);
 	if (filesize < sizeof(Elf32_Ehdr)) {
 		return (NO_SYMBOLS);
 	}

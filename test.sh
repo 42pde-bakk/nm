@@ -2,7 +2,7 @@ FILES=$@
 OPTIONS=""
 
 exit_status=0
-executable="ft_nm32"
+executable="ft_nm"
 
 echo "Executable: ${executable}"
 echo "Files: $FILES"

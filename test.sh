@@ -2,18 +2,20 @@ FILES=$@
 OPTIONS=""
 
 exit_status=0
+executable="ft_nm32"
 
+echo "Executable: ${executable}"
 echo "Files: $FILES"
 
 # Good testfile: /usr/lib/llvm-11/lib/libLLVMAArch64CodeGen.a
 for filename in $FILES; do
   if [[ $OPTIONS ]]; then
     echo "Calling nm on" "'$filename'" "with options $OPTIONS"
-    ./ft_nm "$OPTIONS" "$filename" > /tmp/diff1.txt 2> /dev/null
+    ./${executable} "$OPTIONS" "$filename" > /tmp/diff1.txt 2> /dev/null
     nm "$OPTIONS" "$filename" > /tmp/diff2.txt 2> /dev/null
   else
     echo "Calling nm on" "'$filename'"
-    ./ft_nm "$filename" > /tmp/diff1.txt 2> /dev/null
+    ./${executable} "$filename" > /tmp/diff1.txt 2> /dev/null
     nm "$filename" > /tmp/diff2.txt 2> /dev/null
   fi
 
